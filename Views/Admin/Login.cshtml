@@ -1,0 +1,480 @@
+﻿@model CollegeIssueManagement.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Admin Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login — College Issue Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ── Left Panel ── */
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(145deg, #667eea 0%, #764ba2 60%, #43007a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated background circles */
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            animation: float 6s ease-in-out infinite;
+        }
+        .circle-1 { width: 300px; height: 300px; top: -80px;  left: -80px;  animation-delay: 0s;   }
+        .circle-2 { width: 200px; height: 200px; top: 60%;    left: 60%;    animation-delay: 1.5s; }
+        .circle-3 { width: 150px; height: 150px; bottom: -40px; right: -40px; animation-delay: 3s; }
+        .circle-4 { width: 100px; height: 100px; top: 40%;    left: 10%;    animation-delay: 2s;   }
+
+        @@keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50%       { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 28px;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .brand-title {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: white;
+            text-align: center;
+            z-index: 1;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .brand-subtitle {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.75);
+            text-align: center;
+            z-index: 1;
+            max-width: 300px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        /* Feature list */
+        .feature-list {
+            list-style: none;
+            z-index: 1;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.85);
+            font-size: 0.88rem;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .feature-list li:last-child { border-bottom: none; }
+
+        .feature-icon {
+            width: 34px;
+            height: 34px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        /* ── Right Panel ── */
+        .right-panel {
+            width: 480px;
+            background: #f4f6fb;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 50px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .login-header {
+            margin-bottom: 32px;
+        }
+
+        .login-header .welcome-back {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .login-header h2 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            font-size: 0.88rem;
+            color: #999;
+        }
+
+        /* Validation summary */
+        .alert-error {
+            background: #fff0f0;
+            border-left: 4px solid #f44336;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 0.88rem;
+            color: #c62828;
+        }
+
+        /* Form groups */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #444;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+            font-size: 0.95rem;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 13px 14px 13px 42px;
+            border: 2px solid #e8e8e8;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background: white;
+            color: #333;
+            transition: all 0.25s;
+            outline: none;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+        }
+
+        .input-wrapper input:focus + .input-icon,
+        .input-wrapper:focus-within .input-icon {
+            color: #667eea;
+        }
+
+        /* Toggle password */
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover { color: #667eea; }
+
+        .text-danger {
+            display: block;
+            font-size: 0.78rem;
+            color: #f44336;
+            margin-top: 5px;
+        }
+
+        /* Remember me row */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .remember-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        /* Custom checkbox */
+        .custom-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+
+        /* Submit button */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 18px rgba(102,126,234,0.35);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(102,126,234,0.45);
+        }
+
+        .btn-login:active { transform: translateY(0); }
+
+        /* Loading state */
+        .btn-login .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @@keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer note */
+        .login-footer {
+            margin-top: 28px;
+            text-align: center;
+            font-size: 0.78rem;
+            color: #bbb;
+            line-height: 1.6;
+        }
+
+        .login-footer i { color: #667eea; }
+
+        /* Responsive */
+        @@media (max-width: 900px) {
+            .left-panel { display: none; }
+            .right-panel { width: 100%; padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Left Branding Panel ── -->
+    <div class="left-panel">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+        <div class="circle circle-4"></div>
+
+        <div class="brand-logo">
+            <i class="fas fa-graduation-cap"></i>
+        </div>
+
+        <h1 class="brand-title">College Issue<br />Management</h1>
+        <p class="brand-subtitle">
+            A centralized platform to manage and resolve student issues efficiently.
+        </p>
+
+        <ul class="feature-list">
+            <li>
+                <div class="feature-icon"><i class="fas fa-tachometer-alt"></i></div>
+                Real-time Dashboard & Analytics
+            </li>
+            <li>
+                <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
+                Manage All Issue Types in One Place
+            </li>
+            <li>
+                <div class="feature-icon"><i class="fas fa-bell"></i></div>
+                Instant Email Notifications
+            </li>
+            <li>
+                <div class="feature-icon"><i class="fas fa-qrcode"></i></div>
+                QR Code Issue Tracking
+            </li>
+            <li>
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                Secure Admin Access
+            </li>
+        </ul>
+    </div>
+
+    <!-- ── Right Login Panel ── -->
+    <div class="right-panel">
+        <div class="login-card">
+
+            <div class="login-header">
+                <div class="welcome-back">Welcome Back</div>
+                <h2>Admin Sign In</h2>
+                <p>Enter your credentials to access the dashboard</p>
+            </div>
+
+            @if (ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div asp-validation-summary="ModelOnly"></div>
+                </div>
+            }
+
+            <form asp-action="Login" method="post" id="loginForm">
+                @Html.AntiForgeryToken()
+
+                <!-- Username -->
+                <div class="form-group">
+                    <label asp-for="Username">Username</label>
+                    <div class="input-wrapper">
+                        <input asp-for="Username"
+                               placeholder="Enter your username"
+                               autocomplete="username"
+                               required />
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label asp-for="Password">Password</label>
+                    <div class="input-wrapper">
+                        <input asp-for="Password"
+                               type="password"
+                               id="passwordField"
+                               placeholder="Enter your password"
+                               autocomplete="current-password"
+                               required />
+                        <i class="fas fa-lock input-icon"></i>
+                        <i class="fas fa-eye toggle-password" id="togglePwd" title="Show/Hide password"></i>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <!-- Remember Me -->
+                <div class="remember-row">
+                    <label class="remember-label">
+                        <input asp-for="RememberMe"
+                               type="checkbox"
+                               class="custom-checkbox" />
+                        Remember me
+                    </label>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <span class="spinner" id="spinner"></span>
+                    <i class="fas fa-sign-in-alt" id="loginIcon"></i>
+                    <span id="loginText">Sign In to Dashboard</span>
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <i class="fas fa-lock"></i>
+                Secure admin access only. Unauthorized access is prohibited.
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        const togglePwd   = document.getElementById('togglePwd');
+        const passwordField = document.getElementById('passwordField');
+
+        togglePwd.addEventListener('click', () => {
+            const isPassword = passwordField.type === 'password';
+            passwordField.type = isPassword ? 'text' : 'password';
+            togglePwd.classList.toggle('fa-eye',      !isPassword);
+            togglePwd.classList.toggle('fa-eye-slash', isPassword);
+        });
+
+        // Loading spinner on submit
+        document.getElementById('loginForm').addEventListener('submit', () => {
+            const btn      = document.getElementById('loginBtn');
+            const spinner  = document.getElementById('spinner');
+            const icon     = document.getElementById('loginIcon');
+            const text     = document.getElementById('loginText');
+
+            btn.disabled        = true;
+            spinner.style.display = 'block';
+            icon.style.display    = 'none';
+            text.textContent      = 'Signing in...';
+        });
+    </script>
+</body>
+</html>

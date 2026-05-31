@@ -1,0 +1,144 @@
+﻿@model CollegeIssueManagement.Models.ViewModels.InternshipIssueViewModel
+
+<div class="fields-grid">
+
+    <div class="field">
+        <label>Current Semester <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="CurrentSemester" required>
+                <option value="">Select semester</option>
+                @for (int i = 1; i <= 8; i++)
+                {
+                    <option value="@i">Semester @i</option>
+                }
+            </select>
+        </div>
+        <span asp-validation-for="CurrentSemester" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Internship Type <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="InternshipType" required>
+                <option value="">Select type</option>
+                <option>Academic Internship</option>
+                <option>Industrial Internship</option>
+                <option>Research Internship</option>
+                <option>Voluntary Internship</option>
+            </select>
+        </div>
+        <span asp-validation-for="InternshipType" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Preferred Field / Domain <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="PreferredField" required>
+                <option value="">Select field</option>
+                <option>Web Development</option>
+                <option>Mobile Development</option>
+                <option>Data Science / AI</option>
+                <option>Networking / IT Support</option>
+                <option>Cybersecurity</option>
+                <option>UI/UX Design</option>
+                <option>Other</option>
+            </select>
+        </div>
+        <span asp-validation-for="PreferredField" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Company Name (if already found)</label>
+        <div class="input-box">
+            <i class="fas fa-building ico"></i>
+            <input asp-for="CompanyName"
+                   placeholder="e.g. Tech Solutions Pvt. Ltd." />
+        </div>
+        <span asp-validation-for="CompanyName" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Guidance Needed For</label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="GuidanceNeeded">
+                <option value="">Select (optional)</option>
+                <option>Finding a Company</option>
+                <option>Resume / CV Preparation</option>
+                <option>Interview Preparation</option>
+                <option>Documentation / Letter</option>
+                <option>Technical Skills</option>
+            </select>
+        </div>
+        <span asp-validation-for="GuidanceNeeded" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Preferred Duration</label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="PreferredDuration">
+                <option value="">Select duration</option>
+                <option>1 Month</option>
+                <option>2 Months</option>
+                <option>3 Months</option>
+                <option>6 Months</option>
+            </select>
+        </div>
+        <span asp-validation-for="PreferredDuration" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label>Skills You Have</label>
+        <div class="input-box no-ico">
+            <textarea asp-for="Skills" rows="3"
+                      placeholder="e.g. C#, ASP.NET, SQL, React..."></textarea>
+        </div>
+        <span asp-validation-for="Skills" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label class="checkbox-label">
+            <input asp-for="HasPreviousExperience" type="checkbox"
+                   id="hasPrevExp" class="custom-check" />
+            <span class="check-box"></span>
+            Do you have previous internship experience?
+        </label>
+    </div>
+
+    <div class="field f-full" id="prevCompanyWrap" style="display:none;">
+        <label>Previous Company Name</label>
+        <div class="input-box">
+            <i class="fas fa-history ico"></i>
+            <input asp-for="PreviousCompany"
+                   placeholder="e.g. Infosys, Local IT Firm..." />
+        </div>
+        <span asp-validation-for="PreviousCompany" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label>Description / Additional Details <span class="req">*</span></label>
+        <div class="input-box no-ico">
+            <textarea asp-for="Description" rows="4"
+                      placeholder="Describe your internship issue or request..."
+                      required></textarea>
+        </div>
+        <span asp-validation-for="Description" class="field-error"></span>
+    </div>
+
+</div>
+
+<input type="hidden" asp-for="Type" />
+<input type="hidden" asp-for="StudentName" />
+<input type="hidden" asp-for="StudentEmail" />
+<input type="hidden" asp-for="StudentRollNo" />
+<input type="hidden" asp-for="StudentDepartment" />
+<input type="hidden" asp-for="StudentPhone" />
+
+<script>
+    const hasPrev = document.getElementById('hasPrevExp');
+    const prevWrap = document.getElementById('prevCompanyWrap');
+    if (hasPrev) {
+        hasPrev.addEventListener('change', () => {
+            prevWrap.style.display = hasPrev.checked ? 'block' : 'none';
+        });
+    }
+</script>

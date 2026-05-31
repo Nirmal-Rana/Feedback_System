@@ -1,0 +1,80 @@
+﻿@model CollegeIssueManagement.Models.ViewModels.InternetIssueViewModel
+
+<div class="fields-grid">
+
+    <div class="field">
+        <label>Internet Type <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="InternetType" required>
+                <option value="">Select type</option>
+                <option>WiFi</option>
+                <option>LAN/Ethernet</option>
+                <option>Mobile Data</option>
+            </select>
+        </div>
+        <span asp-validation-for="InternetType" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Issue Category <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="IssueCategory" required>
+                <option value="">Select category</option>
+                <option>No Connection</option>
+                <option>Slow Speed</option>
+                <option>Intermittent Connection</option>
+                <option>Login/Authentication Issue</option>
+                <option>Limited Connectivity</option>
+            </select>
+        </div>
+        <span asp-validation-for="IssueCategory" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Location / Building <span class="req">*</span></label>
+        <div class="input-box">
+            <i class="fas fa-map-marker-alt ico"></i>
+            <input asp-for="Location"
+                   placeholder="e.g. Academic Block, Library"
+                   required />
+        </div>
+        <span asp-validation-for="Location" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Room / Floor Number</label>
+        <div class="input-box">
+            <i class="fas fa-door-open ico"></i>
+            <input asp-for="RoomNumber"
+                   placeholder="e.g. Room 201, Floor 3" />
+        </div>
+        <span asp-validation-for="RoomNumber" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>When did the issue start?</label>
+        <div class="input-box">
+            <i class="fas fa-calendar ico"></i>
+            <input asp-for="IssueStartDate" type="date" />
+        </div>
+        <span asp-validation-for="IssueStartDate" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label>Error Message (if any)</label>
+        <div class="input-box no-ico">
+            <textarea asp-for="ErrorMessage" rows="3"
+                      placeholder="Paste any error message here..."></textarea>
+        </div>
+        <span asp-validation-for="ErrorMessage" class="field-error"></span>
+    </div>
+
+</div>
+
+<input type="hidden" asp-for="Type" />
+<input type="hidden" asp-for="StudentName" />
+<input type="hidden" asp-for="StudentEmail" />
+<input type="hidden" asp-for="StudentRollNo" />
+<input type="hidden" asp-for="StudentDepartment" />
+<input type="hidden" asp-for="StudentPhone" />
+<input type="hidden" asp-for="Description" />

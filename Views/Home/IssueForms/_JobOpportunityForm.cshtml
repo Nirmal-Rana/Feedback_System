@@ -1,0 +1,154 @@
+﻿@model CollegeIssueManagement.Models.ViewModels.JobOpportunityViewModel
+
+<div class="fields-grid">
+
+    <div class="field">
+        <label>Graduation Year <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="GraduationYear" required>
+                <option value="">Select year</option>
+                @for (int y = 2025; y <= 2030; y++)
+                {
+                    <option value="@y">@y</option>
+                }
+            </select>
+        </div>
+        <span asp-validation-for="GraduationYear" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>CGPA <span class="req">*</span></label>
+        <div class="input-box">
+            <i class="fas fa-star-half-alt ico"></i>
+            <input asp-for="CGPA" type="number" step="0.01" min="0" max="4"
+                   placeholder="e.g. 3.5" required />
+        </div>
+        <span asp-validation-for="CGPA" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Job Type <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="JobType" required>
+                <option value="">Select type</option>
+                <option>Full-time</option>
+                <option>Part-time</option>
+                <option>Remote</option>
+                <option>Hybrid</option>
+                <option>Contract</option>
+                <option>Freelance</option>
+            </select>
+        </div>
+        <span asp-validation-for="JobType" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Preferred Role <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="PreferredRole" required>
+                <option value="">Select role</option>
+                <option>Software Developer</option>
+                <option>Web Developer</option>
+                <option>Mobile App Developer</option>
+                <option>Data Analyst</option>
+                <option>UI/UX Designer</option>
+                <option>Network Engineer</option>
+                <option>Cybersecurity Analyst</option>
+                <option>Business Analyst</option>
+                <option>Other</option>
+            </select>
+        </div>
+        <span asp-validation-for="PreferredRole" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Preferred Industry</label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="PreferredIndustry">
+                <option value="">Select (optional)</option>
+                <option>Information Technology</option>
+                <option>Banking / Finance</option>
+                <option>Education</option>
+                <option>Healthcare</option>
+                <option>E-Commerce</option>
+                <option>Government / Public Sector</option>
+                <option>Any</option>
+            </select>
+        </div>
+        <span asp-validation-for="PreferredIndustry" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Expected Salary (NPR/month)</label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="ExpectedSalary">
+                <option value="">Select range</option>
+                <option>Below 20,000</option>
+                <option>20,000 – 35,000</option>
+                <option>35,000 – 50,000</option>
+                <option>50,000 – 80,000</option>
+                <option>80,000+</option>
+            </select>
+        </div>
+        <span asp-validation-for="ExpectedSalary" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>LinkedIn Profile</label>
+        <div class="input-box">
+            <i class="fab fa-linkedin ico"></i>
+            <input asp-for="LinkedInProfile" type="url"
+                   placeholder="https://linkedin.com/in/..." />
+        </div>
+        <span asp-validation-for="LinkedInProfile" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>GitHub / Portfolio</label>
+        <div class="input-box">
+            <i class="fab fa-github ico"></i>
+            <input asp-for="PortfolioLink" type="url"
+                   placeholder="https://github.com/..." />
+        </div>
+        <span asp-validation-for="PortfolioLink" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label>Certifications</label>
+        <div class="input-box no-ico">
+            <textarea asp-for="Certifications" rows="2"
+                      placeholder="e.g. AWS Certified, CCNA, Google Analytics..."></textarea>
+        </div>
+    </div>
+
+    <div class="field f-full" style="display:flex; gap:20px; flex-wrap:wrap;">
+        <label class="checkbox-label">
+            <input asp-for="ReadyForInterview" type="checkbox" class="custom-check" />
+            <span class="check-box"></span>
+            Ready for interviews immediately
+        </label>
+        <label class="checkbox-label">
+            <input asp-for="NeedPlacementAssistance" type="checkbox" class="custom-check" />
+            <span class="check-box"></span>
+            Need placement assistance
+        </label>
+    </div>
+
+    <div class="field f-full">
+        <label>Description / Additional Details <span class="req">*</span></label>
+        <div class="input-box no-ico">
+            <textarea asp-for="Description" rows="4"
+                      placeholder="Tell us more about your job expectations..."
+                      required></textarea>
+        </div>
+        <span asp-validation-for="Description" class="field-error"></span>
+    </div>
+
+</div>
+
+<input type="hidden" asp-for="Type" />
+<input type="hidden" asp-for="StudentName" />
+<input type="hidden" asp-for="StudentEmail" />
+<input type="hidden" asp-for="StudentRollNo" />
+<input type="hidden" asp-for="StudentDepartment" />
+<input type="hidden" asp-for="StudentPhone" />

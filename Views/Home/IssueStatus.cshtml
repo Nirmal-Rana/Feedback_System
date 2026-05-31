@@ -1,0 +1,281 @@
+﻿@model CollegeIssueManagement.Models.Issue
+@using CollegeIssueManagement.Models
+
+@{
+    ViewData["Title"] = $"Issue #{Model.Id} Status";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .status-container {
+            max-width: 680px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+
+        .status-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .status-header h1 { font-size: 1.6rem; margin-bottom: 6px; }
+        .status-header p  { opacity: 0.85; }
+
+        .status-body { padding: 30px; }
+
+        /* Progress tracker */
+        .progress-track {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 36px;
+            position: relative;
+        }
+
+        .progress-track::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            border: 3px solid #e0e0e0;
+            background: white;
+            color: #ccc;
+            transition: all 0.3s;
+        }
+
+        .step-circle.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 4px 14px rgba(102,126,234,0.4);
+        }
+
+        .step-circle.done {
+            background: #43e97b;
+            border-color: #43e97b;
+            color: white;
+        }
+
+        .step-circle.rejected {
+            background: #f44336;
+            border-color: #f44336;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #999;
+            text-align: center;
+        }
+
+        .step-label.active-label { color: #667eea; }
+        .step-label.done-label   { color: #43e97b; }
+        .step-label.rejected-label { color: #f44336; }
+
+        /* Info rows */
+        .info-section {
+            background: #f8f9ff;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-section h3 {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        .info-row:last-child { border-bottom: none; }
+        .info-row .lbl { color: #888; font-weight: 600; }
+        .info-row .val { color: #333; font-weight: 500; text-align: right; }
+
+        .remarks-box {
+            background: #e8f5e9;
+            border-left: 4px solid #43e97b;
+            border-radius: 0 12px 12px 0;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #2e7d32;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.92rem;
+            transition: opacity 0.2s;
+        }
+
+        .back-btn:hover { opacity: 0.88; color: white; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="status-container">
+        <div class="status-header">
+            <h1><i class="fas fa-search"></i> Issue #@Model.Id</h1>
+            <p>Track the current status of your submitted issue</p>
+        </div>
+
+        <div class="status-body">
+            @{
+                bool isPending  = Model.Status == IssueStatus.Pending;
+                bool isApproved = Model.Status == IssueStatus.Approved;
+                bool isResolved = Model.Status == IssueStatus.Resolved;
+                bool isRejected = Model.Status == IssueStatus.Rejected;
+            }
+
+            <!-- Status Progress Bar -->
+            <div class="progress-track">
+                <div class="progress-step">
+                    <div class="step-circle done">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <span class="step-label done-label">Submitted</span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle @(isApproved || isResolved ? "done" : isPending ? "active" : isRejected ? "rejected" : "")">
+                        <i class="fas fa-@(isRejected ? "times" : "clock")"></i>
+                    </div>
+                    <span class="step-label @(isRejected ? "rejected-label" : isPending ? "active-label" : "done-label")">
+                        @(isRejected ? "Rejected" : "Pending")
+                    </span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle @(isApproved || isResolved ? "done" : "")">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <span class="step-label @(isApproved || isResolved ? "done-label" : "")">Approved</span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle @(isResolved ? "done" : "")">
+                        <i class="fas fa-flag-checkered"></i>
+                    </div>
+                    <span class="step-label @(isResolved ? "done-label" : "")">Resolved</span>
+                </div>
+            </div>
+
+            <!-- Issue Details -->
+            <div class="info-section">
+                <h3><i class="fas fa-info-circle"></i> Issue Details</h3>
+                <div class="info-row">
+                    <span class="lbl">Issue ID</span>
+                    <span class="val">#@Model.Id</span>
+                </div>
+                <div class="info-row">
+                    <span class="lbl">Type</span>
+                    <span class="val">@Model.Type</span>
+                </div>
+                <div class="info-row">
+                    <span class="lbl">Status</span>
+                    <span class="val"><strong>@Model.Status</strong></span>
+                </div>
+                <div class="info-row">
+                    <span class="lbl">Submitted</span>
+                    <span class="val">@Model.SubmittedDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+                </div>
+                @if (Model.ResolvedDate.HasValue)
+                {
+                    <div class="info-row">
+                        <span class="lbl">Resolved</span>
+                        <span class="val">@Model.ResolvedDate.Value.ToString("dd MMM yyyy, hh:mm tt")</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Student Details -->
+            <div class="info-section">
+                <h3><i class="fas fa-user-graduate"></i> Student Details</h3>
+                <div class="info-row">
+                    <span class="lbl">Name</span>
+                    <span class="val">@Model.StudentName</span>
+                </div>
+                <div class="info-row">
+                    <span class="lbl">Roll No</span>
+                    <span class="val">@Model.StudentRollNo</span>
+                </div>
+                <div class="info-row">
+                    <span class="lbl">Department</span>
+                    <span class="val">@Model.StudentDepartment</span>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.AdminRemarks))
+            {
+                <div class="remarks-box">
+                    <strong><i class="fas fa-comment-dots"></i> Admin Remarks:</strong>
+                    <p style="margin-top:6px;">@Model.AdminRemarks</p>
+                </div>
+            }
+
+            <a asp-controller="Home" asp-action="Index" class="back-btn">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,724 @@
+﻿@model IEnumerable<CollegeIssueManagement.Models.Issue>
+@using CollegeIssueManagement.Models
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Manage Issues";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var currentType   = ViewBag.CurrentType as string ?? "all";
+    var currentStatus = ViewBag.CurrentStatus as string ?? "all";
+}
+
+<style>
+    .page-hero {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 28px 30px;
+        border-radius: 18px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .page-hero h1 { font-size: 1.6rem; margin: 0 0 4px; }
+    .page-hero p  { margin: 0; opacity: 0.85; font-size: 0.92rem; }
+
+    /* Type tab strip */
+    .type-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .type-tab {
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: white;
+        color: #666;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .type-tab:hover { text-decoration: none; transform: translateY(-1px); }
+
+    .type-tab.active {
+        color: white;
+        border-color: transparent;
+    }
+
+    .type-tab .tab-count {
+        background: rgba(0,0,0,0.12);
+        padding: 1px 7px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+    }
+
+    /* Tab colors */
+    .tab-all.active        { background: linear-gradient(135deg,#667eea,#764ba2); }
+    .tab-Internet.active   { background: #1565c0; }
+    .tab-IDCard.active     { background: #6a1b9a; }
+    .tab-Internship.active { background: #2e7d32; }
+    .tab-JobOpportunity.active { background: #e65100; }
+    .tab-FacultyFeedback.active { background: #880e4f; }
+    .tab-Counselling.active { background: #006064; }
+    .tab-ManagementAttention.active { background: #f57f17; }
+    .tab-Others.active     { background: #424242; }
+
+    /* Filter row */
+    .filter-row {
+        background: white;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 3px 14px rgba(0,0,0,0.06);
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .filter-row select {
+        padding: 9px 14px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        outline: none;
+        background: #fafafa;
+        min-width: 150px;
+    }
+
+    .filter-row select:focus { border-color: #667eea; }
+
+    .btn-sm {
+        padding: 9px 18px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-purple { background: linear-gradient(135deg,#667eea,#764ba2); color: white; }
+    .btn-light  { background: #f1f1f1; color: #555; text-decoration: none; display:inline-block; }
+
+    /* Table */
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+
+    .table-card-header {
+        padding: 18px 22px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .table-card-header h3 { margin: 0; font-size: 0.95rem; color: #333; }
+
+    .count-pill {
+        background: #667eea;
+        color: white;
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #aaa;
+        font-weight: 700;
+        background: #fafafa;
+        border-bottom: 2px solid #f0f0f0;
+        white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid #f5f5f5; transition: background 0.15s; }
+    tbody tr:hover { background: #f8f9ff; }
+    tbody td { padding: 13px 16px; font-size: 0.88rem; color: #333; vertical-align: middle; }
+
+    .stu-name { font-weight: 600; color: #222; }
+    .stu-roll { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
+
+    .status-badge {
+        padding: 4px 11px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        display: inline-block;
+    }
+    .status-Pending  { background:#fff3cd; color:#856404; }
+    .status-Approved { background:#d1ecf1; color:#0c5460; }
+    .status-Resolved { background:#d4edda; color:#155724; }
+    .status-Rejected { background:#f8d7da; color:#721c24; }
+
+    .btn-view {
+        background: linear-gradient(135deg,#667eea,#764ba2);
+        color: white;
+        padding: 5px 13px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 700;
+        transition: opacity 0.2s;
+        white-space: nowrap;
+    }
+    .btn-view:hover { opacity: 0.85; color: white; text-decoration: none; }
+
+    .empty-box {
+        text-align: center;
+        padding: 60px 20px;
+        color: #ccc;
+    }
+    .empty-box i { font-size: 3rem; margin-bottom: 12px; display: block; }
+
+    .extra-val {
+        font-size: 0.8rem;
+        color: #555;
+        max-width: 160px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+
+<!-- Hero -->
+<div class="page-hero">
+    <div>
+        <h1><i class="fas fa-list-alt"></i> Issue Management</h1>
+        <p>Review, filter and manage all student submitted issues</p>
+    </div>
+</div>
+
+<!-- Type Tabs -->
+@{
+    var allIssuesList = Model.ToList();
+
+    var tabDef = new[]
+    {
+        new { Key="all",                  Label="All",            Icon="fa-th" },
+        new { Key="Internet",             Label="Internet",       Icon="fa-wifi" },
+        new { Key="IDCard",               Label="ID Card",        Icon="fa-id-card" },
+        new { Key="Internship",           Label="Internship",     Icon="fa-briefcase" },
+        new { Key="JobOpportunity",       Label="Job",            Icon="fa-building" },
+        new { Key="FacultyFeedback",      Label="Feedback",       Icon="fa-chalkboard-teacher" },
+        new { Key="Counselling",          Label="Counselling",    Icon="fa-hands-helping" },
+        new { Key="ManagementAttention",  Label="Management",     Icon="fa-bullhorn" },
+        new { Key="Others",               Label="Others",         Icon="fa-ellipsis-h" },
+    };
+}
+
+<div class="type-tabs">
+    @foreach (var tab in tabDef)
+    {
+        var isActive = currentType == tab.Key ? "active" : "";
+        <a asp-action="Issues"
+           asp-route-type="@tab.Key"
+           asp-route-status="@currentStatus"
+           class="type-tab tab-@tab.Key @isActive">
+            <i class="fas @tab.Icon"></i>
+            @tab.Label
+            <span class="tab-count">@(tab.Key == "all" ? allIssuesList.Count : allIssuesList.Count(i => i.Type.ToString() == tab.Key))</span>
+        </a>
+    }
+</div>
+
+<!-- Status Filter -->
+<div class="filter-row">
+    <form method="get" asp-action="Issues" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+        <input type="hidden" name="type" value="@currentType" />
+        <div>
+            <label style="font-size:0.78rem; font-weight:700; color:#888; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px;">Status</label>
+            <select name="status">
+                <option value="all"     selected="@(currentStatus=="all")">All Status</option>
+                <option value="Pending" selected="@(currentStatus=="Pending")">Pending</option>
+                <option value="Approved"selected="@(currentStatus=="Approved")">Approved</option>
+                <option value="Resolved"selected="@(currentStatus=="Resolved")">Resolved</option>
+                <option value="Rejected"selected="@(currentStatus=="Rejected")">Rejected</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-sm btn-purple">
+            <i class="fas fa-filter"></i> Apply
+        </button>
+        <a asp-action="Issues" class="btn-sm btn-light">
+            <i class="fas fa-undo"></i> Reset
+        </a>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="table-card">
+    <div class="table-card-header">
+        <h3>
+            @(currentType == "all" ? "All Issues" : currentType + " Issues")
+            @if (currentStatus != "all") { <span style="color:#aaa; font-weight:400;"> — @currentStatus</span> }
+        </h3>
+        <span class="count-pill">@Model.Count() records</span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-box">
+            <i class="fas fa-inbox"></i>
+            <p>No issues found for the selected filters.</p>
+        </div>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>#ID</th>
+                    <th>Student</th>
+                    <th>Dept.</th>
+                    @if (currentType == "Internet")
+                    {
+                        <th>Internet Type</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                    }
+                    else if (currentType == "IDCard")
+                    {
+                        <th>Card Issue</th>
+                        <th>Card No.</th>
+                        <th>Incident Date</th>
+                    }
+                    else if (currentType == "Internship")
+                    {
+                        <th>Type</th>
+                        <th>Field</th>
+                        <th>Company</th>
+                    }
+                    else if (currentType == "JobOpportunity")
+                    {
+                        <th>Job Type</th>
+                        <th>Role</th>
+                        <th>CGPA</th>
+                    }
+                    else if (currentType == "FacultyFeedback")
+                    {
+                        <th>Faculty</th>
+                        <th>Course</th>
+                        <th>Rating</th>
+                    }
+                    else if (currentType == "Counselling")
+                    {
+                        <th>Type</th>
+                        <th>Urgent</th>
+                        <th>Preferred Date</th>
+                    }
+                    else if (currentType == "ManagementAttention")
+                    {
+                        <th>Category</th>
+                        <th>Area</th>
+                        <th>Severity</th>
+                    }
+                    else
+                    {
+                        <th>Type</th>
+                        <th>Description</th>
+                    }
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var issue in Model)
+                {
+                    Dictionary<string, JsonElement> extra = null;
+                    if (!string.IsNullOrEmpty(issue.AdditionalData))
+                    {
+                        try { extra = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(issue.AdditionalData); } catch { }
+                    }
+
+                    string GetExtra(string key)
+                    {
+                        if (extra == null) return "—";
+                        return extra.ContainsKey(key) ? extra[key].ToString() : "—";
+                    }
+
+                    <tr>
+                        <td><strong>#@issue.Id</strong></td>
+                        <td>
+                            <div class="stu-name">@issue.StudentName</div>
+                            <div class="stu-roll">@issue.StudentRollNo</div>
+                        </td>
+                        <td style="font-size:0.82rem;">@issue.StudentDepartment</td>
+
+                        @if (currentType == "Internet")
+                        {
+                            <td><span class="extra-val">@GetExtra("InternetType")</span></td>
+                            <td><span class="extra-val">@GetExtra("IssueCategory")</span></td>
+                            <td><span class="extra-val">@GetExtra("Location")</span></td>
+                        }
+                        else if (currentType == "IDCard")
+                        {
+                            <td><span class="extra-val">@GetExtra("IDCardIssue")</span></td>
+                            <td><span class="extra-val">@GetExtra("IDCardNumber")</span></td>
+                            <td><span class="extra-val">@(GetExtra("IncidentDate") != "—" ? DateTime.TryParse(GetExtra("IncidentDate"), out var d) ? d.ToString("dd MMM yyyy") : "—" : "—")</span></td>
+                        }
+                        else if (currentType == "Internship")
+                        {
+                            <td><span class="extra-val">@GetExtra("InternshipType")</span></td>
+                            <td><span class="extra-val">@GetExtra("PreferredField")</span></td>
+                            <td><span class="extra-val">@GetExtra("CompanyName")</span></td>
+                        }
+                        else if (currentType == "JobOpportunity")
+                        {
+                            <td><span class="extra-val">@GetExtra("JobType")</span></td>
+                            <td><span class="extra-val">@GetExtra("PreferredRole")</span></td>
+                            <td><span class="extra-val">@GetExtra("CGPA")</span></td>
+                        }
+                        else if (currentType == "FacultyFeedback")
+                        {
+                            <td><span class="extra-val">@GetExtra("FacultyName")</span></td>
+                            <td><span class="extra-val">@GetExtra("CourseName")</span></td>
+                            <td>
+                                @{
+                                    var ratingStr = GetExtra("Rating");
+                                    if (int.TryParse(ratingStr, out int rating) && rating > 0)
+                                    {
+                                        for (int s = 1; s <= 5; s++)
+                                        {
+                                            <i class="fas fa-star" style="color:@(s<=rating?"#f5a623":"#ddd"); font-size:0.75rem;"></i>
+                                        }
+                                    }
+                                    else { <span>—</span> }
+                                }
+                            </td>
+                        }
+                        else if (currentType == "Counselling")
+                        {
+                            <td><span class="extra-val">@GetExtra("CounsellingType")</span></td>
+                            <td>
+                                @(GetExtra("IsUrgent") == "true"
+                                    ? Html.Raw("<span style='color:#f44336;font-weight:700;font-size:0.8rem;'>⚡ Urgent</span>")
+                                    : Html.Raw("<span style='color:#aaa;font-size:0.8rem;'>No</span>"))
+                            </td>
+                            <td><span class="extra-val">@(GetExtra("PreferredDateTime") != "—" ? DateTime.TryParse(GetExtra("PreferredDateTime"), out var pd) ? pd.ToString("dd MMM") : "—" : "—")</span></td>
+                        }
+                        else if (currentType == "ManagementAttention")
+                        {
+                            <td><span class="extra-val">@GetExtra("ManagementCategory")</span></td>
+                            <td><span class="extra-val">@GetExtra("AffectedArea")</span></td>
+                            <td>
+                                @{
+                                    var sev = GetExtra("SeverityLevel");
+                                    var sevColor = sev.Contains("Critical") ? "#f44336" : sev.Contains("High") ? "#ff5722" : sev.Contains("Medium") ? "#ff9800" : "#4caf50";
+                                }
+                                <span style="color:@sevColor; font-weight:700; font-size:0.8rem;">@(sev == "—" ? "—" : sev.Split('—')[0].Trim())</span>
+                            </td>
+                        }
+                        else
+                        {
+                            <td><span class="extra-val">@issue.Type</span></td>
+                            <td><span class="extra-val" title="@issue.Description">@(issue.Description?.Length > 40 ? issue.Description.Substring(0, 40) + "..." : issue.Description)</span></td>
+                        }
+
+                        <td><span class="status-badge status-@issue.Status">@issue.Status</span></td>
+                        <td style="font-size:0.8rem; color:#888; white-space:nowrap;">
+                            @issue.SubmittedDate.ToString("dd MMM yy")<br />
+                            <small>@issue.SubmittedDate.ToString("hh:mm tt")</small>
+                        </td>
+                        <td>
+                            <a asp-action="IssueDetails" asp-route-id="@issue.Id" class="btn-view">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                }
+                @* ── Bulk Notification Button (top of page) ── *@
+@* Add this inside your .page-hero div, after the existing <div> *@
+@*
+    <button onclick="openBulkModal()"
+            style="background:rgba(255,255,255,0.15); color:white; border:1.5px solid rgba(255,255,255,0.3);
+                   padding:9px 20px; border-radius:10px; font-weight:700; font-size:0.88rem; cursor:pointer;">
+        <i class="fas fa-bell"></i> Bulk Notify
+    </button>
+*@
+
+@* ── BULK NOTIFICATION MODAL ── *@
+<div id="bulkModal" style="display:none; position:fixed; inset:0; z-index:9999;
+     background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);
+     align-items:center; justify-content:center;">
+
+    <div style="background:white; border-radius:20px; width:100%; max-width:580px;
+                 max-height:90vh; overflow-y:auto; padding:32px;
+                 box-shadow:0 24px 60px rgba(0,0,0,0.25);
+                 animation:modalIn 0.25s ease; margin:20px;">
+
+        <style>
+            @@keyframes modalIn {
+                from { opacity:0; transform:scale(0.94); }
+                to   { opacity:1; transform:scale(1); }
+            }
+        </style>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;
+                     margin-bottom:24px;">
+            <div>
+                <h2 style="font-size:1.15rem; font-weight:800; color:#1a1a2e; margin:0 0 4px;">
+                    <i class="fas fa-bell" style="color:#667eea; margin-right:8px;"></i>
+                    Bulk Notification
+                </h2>
+                <p style="font-size:0.8rem; color:#999; margin:0;">
+                    Send email &amp; WhatsApp to multiple students at once
+                </p>
+            </div>
+            <button onclick="closeBulkModal()"
+                    style="background:#f1f1f1; border:none; width:36px; height:36px;
+                           border-radius:50%; cursor:pointer; font-size:1rem; color:#666;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div id="bulkResult" style="display:none; margin-bottom:16px;"></div>
+
+        @* Filters *@
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+            <div>
+                <label style="font-size:0.75rem; font-weight:700; color:#666;
+                               text-transform:uppercase; letter-spacing:0.4px;
+                               display:block; margin-bottom:6px;">
+                    Issue Type
+                </label>
+                <select id="bulkType"
+                        style="width:100%; padding:9px 12px; border:2px solid #e0e0e0;
+                               border-radius:10px; font-size:0.87rem; outline:none;
+                               background:#fafafa;">
+                    <option value="all">All Types</option>
+                    <option value="Internet">Internet</option>
+                    <option value="IDCard">ID Card</option>
+                    <option value="Internship">Internship</option>
+                    <option value="JobOpportunity">Job Opportunity</option>
+                    <option value="FacultyFeedback">Faculty Feedback</option>
+                    <option value="Counselling">Counselling</option>
+                    <option value="ManagementAttention">Management Attention</option>
+                    <option value="Others">Others</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.75rem; font-weight:700; color:#666;
+                               text-transform:uppercase; letter-spacing:0.4px;
+                               display:block; margin-bottom:6px;">
+                    Status
+                </label>
+                <select id="bulkStatus"
+                        style="width:100%; padding:9px 12px; border:2px solid #e0e0e0;
+                               border-radius:10px; font-size:0.87rem; outline:none;
+                               background:#fafafa;">
+                    <option value="all">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+            </div>
+        </div>
+
+        @* Subject *@
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.75rem; font-weight:700; color:#666;
+                           text-transform:uppercase; letter-spacing:0.4px;
+                           display:block; margin-bottom:6px;">
+                Subject
+            </label>
+            <input type="text" id="bulkSubject"
+                   placeholder="e.g. Important update about your issue"
+                   style="width:100%; padding:10px 13px; border:2px solid #e0e0e0;
+                          border-radius:10px; font-size:0.88rem; outline:none;" />
+        </div>
+
+        @* Message *@
+        <div style="margin-bottom:14px;">
+            <label style="font-size:0.75rem; font-weight:700; color:#666;
+                           text-transform:uppercase; letter-spacing:0.4px;
+                           display:block; margin-bottom:6px;">
+                Message
+            </label>
+            <textarea id="bulkMessage" rows="5"
+                      style="width:100%; padding:10px 13px; border:2px solid #e0e0e0;
+                             border-radius:10px; font-size:0.88rem; outline:none;
+                             resize:vertical; line-height:1.55;">Dear {{Name}},
+
+This is an important update regarding your issue #{{IssueId}} ({{IssueType}}).
+Current status: {{Status}}
+
+Please visit the administration office for more information.
+
+— Texas College of Management & IT</textarea>
+            <small style="color:#aaa; font-size:0.72rem; margin-top:4px; display:block;">
+                Placeholders: <code>{{Name}}</code> <code>{{IssueId}}</code>
+                <code>{{IssueType}}</code> <code>{{Status}}</code>
+            </small>
+        </div>
+
+        @* Channels *@
+        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer;
+                           background:#f8f9ff; border:1.5px solid #e0e4ff;
+                           border-radius:10px; padding:9px 14px; font-size:0.84rem;
+                           font-weight:600; color:#444; user-select:none;">
+                <input type="checkbox" id="bulkChkEmail" checked
+                       style="accent-color:#667eea; width:15px; height:15px;" />
+                <i class="fas fa-envelope" style="color:#667eea;"></i> Email
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer;
+                           background:#f0fdf4; border:1.5px solid #bbf7d0;
+                           border-radius:10px; padding:9px 14px; font-size:0.84rem;
+                           font-weight:600; color:#444; user-select:none;">
+                <input type="checkbox" id="bulkChkWA" checked
+                       style="accent-color:#25d366; width:15px; height:15px;" />
+                <i class="fab fa-whatsapp" style="color:#25d366;"></i> WhatsApp
+            </label>
+        </div>
+
+        @* Action buttons *@
+        <div style="display:flex; gap:10px;">
+            <button onclick="closeBulkModal()"
+                    style="flex:1; padding:12px; background:#f1f1f1; color:#555;
+                           border:none; border-radius:10px; font-weight:700;
+                           font-size:0.9rem; cursor:pointer;">
+                Cancel
+            </button>
+            <button onclick="sendBulkNotification()" id="bulkSendBtn"
+                    style="flex:2; padding:12px; background:linear-gradient(135deg,#667eea,#764ba2);
+                           color:white; border:none; border-radius:10px; font-weight:700;
+                           font-size:0.9rem; cursor:pointer; display:flex;
+                           align-items:center; justify-content:center; gap:8px;">
+                <i class="fas fa-paper-plane"></i>
+                <span id="bulkBtnTxt">Send to All Matching</span>
+                <i class="fas fa-spinner fa-spin" id="bulkSpin" style="display:none;"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+@* Add "Bulk Notify" button to the page hero — paste this inside your .page-hero div *@
+<script>
+    // Inject Bulk Notify button into hero
+    document.addEventListener('DOMContentLoaded', () => {
+        const hero = document.querySelector('.page-hero');
+        if (hero) {
+            const btn = document.createElement('button');
+            btn.onclick = openBulkModal;
+            btn.innerHTML = '<i class="fas fa-bell"></i> Bulk Notify';
+            btn.style.cssText = `
+                background:rgba(255,255,255,0.15); color:white;
+                border:1.5px solid rgba(255,255,255,0.3);
+                padding:9px 20px; border-radius:10px; font-weight:700;
+                font-size:0.88rem; cursor:pointer; backdrop-filter:blur(4px);
+                transition:all 0.2s;
+            `;
+            btn.onmouseover = () => btn.style.background = 'rgba(255,255,255,0.25)';
+            btn.onmouseout  = () => btn.style.background = 'rgba(255,255,255,0.15)';
+            hero.appendChild(btn);
+        }
+    });
+
+    function openBulkModal() {
+        const m = document.getElementById('bulkModal');
+        m.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeBulkModal() {
+        document.getElementById('bulkModal').style.display = 'none';
+        document.body.style.overflow = '';
+        document.getElementById('bulkResult').style.display = 'none';
+    }
+
+    async function sendBulkNotification() {
+        const subject    = document.getElementById('bulkSubject').value.trim();
+        const message    = document.getElementById('bulkMessage').value.trim();
+        const type       = document.getElementById('bulkType').value;
+        const status     = document.getElementById('bulkStatus').value;
+        const sendEmail  = document.getElementById('bulkChkEmail').checked;
+        const sendWA     = document.getElementById('bulkChkWA').checked;
+        const btn        = document.getElementById('bulkSendBtn');
+        const txt        = document.getElementById('bulkBtnTxt');
+        const spin       = document.getElementById('bulkSpin');
+
+        if (!subject || !message) {
+            showBulkResult('error', 'Please fill in subject and message.');
+            return;
+        }
+
+        if (!sendEmail && !sendWA) {
+            showBulkResult('error', 'Select at least one channel.');
+            return;
+        }
+
+        btn.disabled = true;
+        txt.textContent = 'Sending…';
+        spin.style.display = 'inline-block';
+
+        try {
+            const params = new URLSearchParams({
+                issueType: type, issueStatus: status,
+                subject, message,
+                sendEmail: sendEmail.toString(),
+                sendWhatsApp: sendWA.toString()
+            });
+
+            const res  = await fetch('/Admin/SendBulkNotification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params.toString()
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showBulkResult('success',
+                    `✅ Done! &nbsp;
+                     <i class='fas fa-envelope'></i> Email: ${data.emailSent} sent
+                     &nbsp;|&nbsp;
+                     <i class='fab fa-whatsapp'></i> WhatsApp: ${data.whatsAppSent} sent
+                     &nbsp;(${data.total} total students matched)`);
+            } else {
+                showBulkResult('error', data.message || 'Something went wrong.');
+            }
+        } catch (e) {
+            showBulkResult('error', 'Network error: ' + e.message);
+        } finally {
+            btn.disabled = false;
+            txt.textContent = 'Send to All Matching';
+            spin.style.display = 'none';
+        }
+    }
+
+    function showBulkResult(type, msg) {
+        const box = document.getElementById('bulkResult');
+        box.style.display = 'block';
+        box.style.cssText = `
+            display:block; padding:11px 14px; border-radius:10px;
+            font-size:0.84rem; font-weight:600; margin-bottom:16px;
+            ${type === 'success'
+                ? 'background:#d4edda; color:#155724; border-left:4px solid #28a745;'
+                : 'background:#f8d7da; color:#721c24; border-left:4px solid #dc3545;'}
+        `;
+        box.innerHTML = msg;
+    }
+</script>
+            </tbody>
+        </table>
+    }
+</div>

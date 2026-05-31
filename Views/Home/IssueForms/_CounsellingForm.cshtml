@@ -1,0 +1,93 @@
+﻿@model CollegeIssueManagement.Models.ViewModels.CounsellingViewModel
+
+<div class="fields-grid">
+
+    <div class="field">
+        <label>Counselling Type <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="CounsellingType" required>
+                <option value="">Select type</option>
+                <option>Academic Counselling</option>
+                <option>Career Counselling</option>
+                <option>Personal Counselling</option>
+                <option>Mental Health Support</option>
+                <option>Financial Guidance</option>
+            </select>
+        </div>
+        <span asp-validation-for="CounsellingType" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Preferred Date &amp; Time</label>
+        <div class="input-box">
+            <i class="fas fa-calendar-check ico"></i>
+            <input asp-for="PreferredDateTime" type="datetime-local" />
+        </div>
+        <span asp-validation-for="PreferredDateTime" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label>Specific Concerns</label>
+        <div class="input-box no-ico">
+            <textarea asp-for="SpecificConcerns" rows="3"
+                      placeholder="Describe what you need help with..."></textarea>
+        </div>
+        <span asp-validation-for="SpecificConcerns" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Emergency Contact Name</label>
+        <div class="input-box">
+            <i class="fas fa-user-shield ico"></i>
+            <input asp-for="EmergencyContactName"
+                   placeholder="Parent / Guardian name" />
+        </div>
+        <span asp-validation-for="EmergencyContactName" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Emergency Contact Number</label>
+        <div class="input-box">
+            <i class="fas fa-phone-alt ico"></i>
+            <input asp-for="EmergencyContactNumber" type="tel"
+                   placeholder="98XXXXXXXX" />
+        </div>
+        <span asp-validation-for="EmergencyContactNumber" class="field-error"></span>
+    </div>
+
+    <div class="field f-full" style="display:flex; gap:20px; flex-wrap:wrap;">
+        <label class="checkbox-label">
+            <input asp-for="IsUrgent" type="checkbox" class="custom-check" />
+            <span class="check-box"></span>
+            This is urgent
+        </label>
+        <label class="checkbox-label">
+            <input asp-for="ImmediateSessionNeeded" type="checkbox" class="custom-check" />
+            <span class="check-box"></span>
+            Available for immediate session
+        </label>
+        <label class="checkbox-label">
+            <input asp-for="HasPreviousCounselling" type="checkbox" class="custom-check" />
+            <span class="check-box"></span>
+            Previously attended counselling
+        </label>
+    </div>
+
+    <div class="field f-full">
+        <label>Description / Additional Details <span class="req">*</span></label>
+        <div class="input-box no-ico">
+            <textarea asp-for="Description" rows="4"
+                      placeholder="Any additional information..."
+                      required></textarea>
+        </div>
+        <span asp-validation-for="Description" class="field-error"></span>
+    </div>
+
+</div>
+
+<input type="hidden" asp-for="Type" />
+<input type="hidden" asp-for="StudentName" />
+<input type="hidden" asp-for="StudentEmail" />
+<input type="hidden" asp-for="StudentRollNo" />
+<input type="hidden" asp-for="StudentDepartment" />
+<input type="hidden" asp-for="StudentPhone" />

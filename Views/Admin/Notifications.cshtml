@@ -1,0 +1,202 @@
+﻿@model List<CollegeIssueManagement.Models.Notification>
+
+@{
+    ViewData["Title"] = "Notifications";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <i class="fas fa-bell"></i> Notifications
+                    <span class="badge bg-primary ms-2">@Model?.Count(n => !n.IsRead) Unread</span>
+                </h2>
+                <div>
+                    <button class="btn btn-outline-primary" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double"></i> Mark All as Read
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="notifications-list">
+                    @foreach (var notification in Model)
+                    {
+                        <div class="notification-item @(notification.IsRead ? "read" : "unread")"
+                             data-id="@notification.Id">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="notification-icon me-3">
+                                            @if (!notification.IsRead)
+                                            {
+                                                <i class="fas fa-circle text-primary" style="font-size: 12px;"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-circle text-secondary" style="font-size: 12px;"></i>
+                                            }
+                                        </div>
+                                        <h5 class="mb-0">@notification.Title</h5>
+                                    </div>
+                                    <p class="mb-2">@notification.Message</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="far fa-clock"></i>
+                                            @FormatDateTime(notification.CreatedDate)
+                                        </small>
+                                        <div>
+                                            <a href="@Url.Action("IssueDetails", "Admin", new { id = notification.IssueId })"
+                                               class="btn btn-sm btn-link">
+                                                <i class="fas fa-eye"></i> View Issue
+                                            </a>
+                                            @if (!notification.IsRead)
+                                            {
+                                                <button class="btn btn-sm btn-outline-success ms-2"
+                                                        onclick="markAsRead(@notification.Id)">
+                                                    <i class="fas fa-check"></i> Mark as Read
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-bell-slash fa-4x mb-3 d-block"></i>
+                    <h5>No Notifications</h5>
+                    <p>You're all caught up! No notifications to display.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function markAsRead(notificationId) {
+            $.ajax({
+                url: '@Url.Action("MarkNotificationAsRead", "Admin")',
+                type: 'POST',
+                data: { id: notificationId },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Failed to mark notification as read.');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred.');
+                }
+            });
+        }
+
+        function markAllAsRead() {
+            if (confirm('Mark all notifications as read?')) {
+                var unreadNotifications = $('.notification-item.unread');
+                var promises = [];
+
+                unreadNotifications.each(function () {
+                    var id = $(this).data('id');
+                    promises.push(
+                        $.ajax({
+                            url: '@Url.Action("MarkNotificationAsRead", "Admin")',
+                            type: 'POST',
+                            data: { id: id },
+                            headers: {
+                                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                            }
+                        })
+                    );
+                });
+
+                Promise.all(promises).then(() => {
+                    location.reload();
+                }).catch(() => {
+                    alert('Some notifications could not be marked as read.');
+                });
+            }
+        }
+    </script>
+}
+
+<style>
+    .notification-item {
+        padding: 20px;
+        border-bottom: 1px solid #e0e0e0;
+        transition: background-color 0.2s;
+    }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+
+            .notification-item.unread:hover {
+                background-color: #e3f0ff;
+            }
+
+        .notification-item.read {
+            background-color: white;
+        }
+
+            .notification-item.read:hover {
+                background-color: #f5f5f5;
+            }
+
+    .notification-icon {
+        width: 20px;
+    }
+
+    h5 {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .btn-link {
+        text-decoration: none;
+        padding: 5px 10px;
+    }
+
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+</style>
+}
+
+@functions {
+    public string FormatDateTime(DateTime date)
+    {
+        var diff = DateTime.Now - date;
+
+        if (diff.TotalMinutes < 1)
+            return "Just now";
+        if (diff.TotalMinutes < 60)
+            return $"{(int)diff.TotalMinutes} minute(s) ago";
+        if (diff.TotalHours < 24)
+            return $"{(int)diff.TotalHours} hour(s) ago";
+        if (diff.TotalDays < 7)
+            return $"{(int)diff.TotalDays} day(s) ago";
+
+        return date.ToString("MMM dd, yyyy");
+    }
+}

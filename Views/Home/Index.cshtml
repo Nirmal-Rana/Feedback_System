@@ -1,0 +1,354 @@
+﻿@{
+    ViewData["Title"] = "Texas College of Management & IT";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover" />
+    <meta name="description" content="Submit your issues easily using QR Code at Texas College of Management & IT" />
+    <title>@ViewData["Title"]</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="~/css/style.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="main-container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1>
+                @* <i class="fas fa-university"></i> *@
+                Texas College of Management & IT
+            </h1>
+           
+            <div class="instruction-banner">
+                <i class="fas fa-mobile-alt"></i>
+                Scan QR Code with Mobile Camera 
+            </div>
+        </div>
+
+        <!-- QR Code Grid -->
+        <div id="qrGrid" class="qr-grid">
+            <!-- Skeleton loaders -->
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+        </div>
+
+        <!-- Divider -->
+        <div class="divider"></div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="@Url.Action("Login", "Admin")" class="btn-custom btn-secondary-custom">
+                <i class="fas fa-user-shield"></i> Admin Portal
+            </a>
+            <a href="javascript:void(0)" onclick="downloadAllQRCodes()" class="btn-custom btn-secondary-custom">
+                <i class="fas fa-print"></i> Print QR Codes
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <i class="fas fa-envelope"></i> durganand@texascollege.edu.np |
+                <i class="fas fa-phone"></i> +977-9700053701
+            </p>
+            <small>© 2026 Texas College of Management & IT. All rights reserved.</small>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Issue types with their details
+        const issueTypes = [
+        {
+        name: "Internet Issue",
+        type: "Internet",
+        icon: "fas fa-wifi",
+        color: "#4CAF50",
+        description: "Slow speed, connectivity issues, network problems",
+        popular: true
+        },
+        {
+        name: "ID Card Issue",
+        type: "IDCard",
+        icon: "fas fa-id-card",
+        color: "#2196F3",
+        description: "Lost, damaged, access problems",
+        popular: true
+        },
+        {
+        name: "Internship Issue",
+        type: "Internship",
+        icon: "fas fa-briefcase",
+        color: "#FF9800",
+        description: "Internship opportunities, guidance, certificates",
+        popular: false
+        },
+        {
+        name: "Job Enquiry",
+        type: "JobOpportunity",
+        icon: "fas fa-handshake",
+        color: "#9C27B0",
+        description: "Job placements, career guidance, recruitment",
+        popular: true
+        },
+        {
+        name: "Faculty Feedback",
+        type: "FacultyFeedback",
+        icon: "fas fa-chalkboard-user",
+        color: "#E91E63",
+        description: "Teaching feedback, suggestions, appreciation",
+        popular: false
+        },
+        {
+        name: "Management",
+        type: "ManagementAttention",
+        icon: "fas fa-building",
+        color: "#00BCD4",
+        description: "Management concerns, suggestions, queries",
+        popular: false
+        },
+        {
+        name: "Counselling",
+        type: "Counselling",
+        icon: "fas fa-heart",
+        color: "#FF5722",
+        description: "Academic counselling, mental health support",
+        popular: false
+        },
+        {
+        name: "Others",
+        type: "Others",
+        icon: "fas fa-ellipsis-h",
+        color: "#607D8B",
+        description: "Other issues and general queries",
+        popular: false
+        }
+        ];
+
+        // Cache for QR codes to avoid regenerating
+        const qrCodeCache = new Map();
+
+        // Generate QR code for an issue type with caching
+        async function generateQRCode(issueType) {
+        // Check cache first
+        if (qrCodeCache.has(issueType)) {
+        return qrCodeCache.get(issueType);
+        }
+
+        return new Promise((resolve) => {
+        const baseUrl = `${window.location.protocol}//${window.location.host}`;
+        const formUrl = `${baseUrl}/Home/CreateIssue?type=${issueType}`;
+
+        const qrData = JSON.stringify({
+        type: issueType,
+        url: formUrl,
+        timestamp: new Date().toISOString()
+        });
+
+        // Use multiple QR code APIs for redundancy
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
+
+        const img = new Image();
+        const timeout = setTimeout(() => {
+        // Fallback to Google Charts API if timeout
+        const fallbackUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(qrData)}&chld=H|0`;
+        qrCodeCache.set(issueType, fallbackUrl);
+        resolve(fallbackUrl);
+        }, 3000);
+
+        img.onload = () => {
+        clearTimeout(timeout);
+        qrCodeCache.set(issueType, qrCodeUrl);
+        resolve(qrCodeUrl);
+        };
+
+        img.onerror = () => {
+        clearTimeout(timeout);
+        const fallbackUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(qrData)}&chld=H|0`;
+        qrCodeCache.set(issueType, fallbackUrl);
+        resolve(fallbackUrl);
+        };
+
+        img.src = qrCodeUrl;
+        });
+        }
+
+        // Render QR code cards with batch processing
+        async function renderQRCards() {
+        const grid = document.getElementById('qrGrid');
+        grid.innerHTML = '';
+
+        // Process cards in batches to avoid UI freezing
+        const batchSize = 2;
+        const cards = [];
+
+        for (let i = 0; i < issueTypes.length; i += batchSize) {
+        const batch = issueTypes.slice(i, i + batchSize);
+        const batchPromises = batch.map(async (issue) => {
+        try {
+        const qrCodeUrl = await generateQRCode(issue.type);
+        const card = createCard(issue, qrCodeUrl);
+        cards.push(card);
+        return card;
+        } catch (error) {
+        console.error(`Error generating QR for ${issue.type}:`, error);
+        return null;
+        }
+        });
+
+        await Promise.all(batchPromises);
+
+        // Add cards to DOM in batches
+        cards.forEach(card => {
+        if (card) grid.appendChild(card);
+        });
+        cards.length = 0;
+
+        // Small delay to allow rendering
+        await new Promise(resolve => setTimeout(resolve, 50));
+        }
+
+        // Show success toast
+        showToast('QR Codes loaded successfully!', 'success');
+        }
+
+        // Create card element
+        function createCard(issue, qrCodeUrl) {
+        const card = document.createElement('div');
+        card.className = 'qr-card';
+        card.setAttribute('data-issue-type', issue.type);
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.onclick = () => {
+        window.open(`/Home/CreateIssue?type=${issue.type}`, '_blank');
+        };
+        card.onkeypress = (e) => {
+        if (e.key === 'Enter') {
+        card.onclick();
+        }
+        };
+
+        card.innerHTML = `
+        ${issue.popular ? '<div class="badge-popular"><i class="fas fa-fire"></i> Popular</div>' : ''}
+        <div class="card-icon" style="color: ${issue.color}">
+        <i class="${issue.icon}"></i>
+        </div>
+        <h3>${issue.name}</h3>
+        <div class="qr-code-container">
+        <img src="${qrCodeUrl}" alt="${issue.name} QR Code" class="qr-code-img" loading="lazy" />
+        </div>
+        <p class="scan-instruction">
+        <i class="fas fa-camera"></i> Scan with Mobile Camera
+        </p>
+        <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">
+        ${issue.description}
+        </p>
+        `;
+
+        return card;
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+        toast.innerHTML = `<i class="fas ${icon}" style="color: ${type === 'success' ? '#4CAF50' : '#667eea'}"></i> ${message}`;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.3s reverse';
+        setTimeout(() => toast.remove(), 300);
+        }, 3000);
+        }
+
+        // Download all QR codes as PDF
+        function downloadAllQRCodes() {
+        showToast('Preparing QR codes for printing...', 'info');
+        setTimeout(() => {
+        window.print();
+        }, 500);
+        }
+
+        // Show mobile scanning guide modal
+        function showScanGuide() {
+        const modalHtml = `
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease;">
+        <div style="background: white; border-radius: 20px; max-width: 500px; width: 90%; padding: 30px; text-align: center; animation: slideUp 0.4s ease;">
+        <i class="fas fa-camera" style="font-size: 60px; color: #667eea; margin-bottom: 20px;"></i>
+        <h3 style="margin: 20px 0; color: #333;">How to Scan QR Code</h3>
+        <div style="text-align: left; line-height: 2;">
+        <p><i class="fas fa-mobile-alt" style="color: #4CAF50; margin-right: 10px;"></i> <strong>Step 1:</strong> Open your mobile camera app</p>
+        <p><i class="fas fa-qrcode" style="color: #2196F3; margin-right: 10px;"></i> <strong>Step 2:</strong> Point camera at the QR code</p>
+        <p><i class="fas fa-bell" style="color: #FF9800; margin-right: 10px;"></i> <strong>Step 3:</strong> Tap on the notification that appears</p>
+        <p><i class="fas fa-edit" style="color: #9C27B0; margin-right: 10px;"></i> <strong>Step 4:</strong> Fill and submit the issue form</p>
+        <p><i class="fas fa-check-circle" style="color: #4CAF50; margin-right: 10px;"></i> <strong>Step 5:</strong> Receive notification on resolution</p>
+        </div>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="margin-top: 25px; padding: 12px 40px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: transform 0.2s;">
+        Got it! <i class="fas fa-smile-wink"></i>
+        </button>
+        </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // Preload images for better performance
+        async function preloadImages() {
+        const imagePromises = issueTypes.map(async (issue) => {
+        const qrCodeUrl = await generateQRCode(issue.type);
+        return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = resolve;
+        img.src = qrCodeUrl;
+        });
+        });
+        await Promise.all(imagePromises);
+        }
+
+        // Initialize page
+        $(document).ready(async function () {
+        // Show body with fade in
+        document.body.classList.add('loaded');
+
+        // Preload all QR codes in background
+        preloadImages().then(() => {
+        console.log('All QR codes preloaded');
+        });
+
+        // Render QR codes
+        await renderQRCards();
+
+        // Add help button
+        const helpBtn = document.createElement('button');
+        helpBtn.className = 'help-btn';
+        helpBtn.innerHTML = '<i class="fas fa-question"></i>';
+        helpBtn.setAttribute('aria-label', 'Help');
+        helpBtn.onclick = showScanGuide;
+        document.body.appendChild(helpBtn);
+
+        // Add keyboard support for escape key to close modal
+        document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+        const modal = document.querySelector('[style*="position: fixed"][style*="z-index: 10000"]');
+        if (modal) modal.remove();
+        }
+        });
+
+        // Show welcome message on first visit
+        if (!localStorage.getItem('visited')) {
+        setTimeout(() => {
+        showToast('Welcome! Scan any QR code to submit your issue.', 'info');
+        }, 1000);
+        localStorage.setItem('visited', 'true');
+        }
+        });
+    </script>
+</body>
+</html>

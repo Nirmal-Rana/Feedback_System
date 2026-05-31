@@ -1,0 +1,143 @@
+﻿@model CollegeIssueManagement.Models.ViewModels.ManagementAttentionViewModel
+
+<div class="fields-grid">
+
+    <div class="field">
+        <label>Issue Category <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="ManagementCategory" required>
+                <option value="">Select category</option>
+                <option>Infrastructure / Building</option>
+                <option>College Policy</option>
+                <option>Facilities</option>
+                <option>Administrative Services</option>
+                <option>Student Welfare</option>
+                <option>Safety &amp; Security</option>
+                <option>Other</option>
+            </select>
+        </div>
+        <span asp-validation-for="ManagementCategory" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Affected Area <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="AffectedArea" required>
+                <option value="">Select area</option>
+                <option>Classroom</option>
+                <option>Library</option>
+                <option>Canteen</option>
+                <option>Grounds / Sports Area</option>
+                <option>Hostel</option>
+                <option>Administration Block</option>
+                <option>Computer Lab</option>
+                <option>Washroom / Restroom</option>
+                <option>Entire Campus</option>
+            </select>
+        </div>
+        <span asp-validation-for="AffectedArea" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Severity Level <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="SeverityLevel" required>
+                <option value="">Select severity</option>
+                <option value="Low">🟢 Low — Minor inconvenience</option>
+                <option value="Medium">🟡 Medium — Affects daily work</option>
+                <option value="High">🔴 High — Needs quick fix</option>
+                <option value="Critical">🚨 Critical — Safety risk</option>
+            </select>
+        </div>
+        <span asp-validation-for="SeverityLevel" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Expected Timeframe</label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="ExpectedTimeframe">
+                <option value="">Select (optional)</option>
+                <option>Within 24 hours</option>
+                <option>Within 3 days</option>
+                <option>Within 1 week</option>
+                <option>Within 1 month</option>
+                <option>Flexible</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="field f-full">
+        <label>Suggestions for Resolution</label>
+        <div class="input-box no-ico">
+            <textarea asp-for="Suggestions" rows="3"
+                      placeholder="Any suggestions you have..."></textarea>
+        </div>
+    </div>
+
+    <div class="field f-full" style="display:flex; gap:20px; flex-wrap:wrap;">
+        <label class="checkbox-label">
+            <input asp-for="ImmediateAttention" type="checkbox" class="custom-check" />
+            <span class="check-box"></span>
+            Requires immediate attention
+        </label>
+        <label class="checkbox-label">
+            <input asp-for="AffectsManyStudents" type="checkbox"
+                   class="custom-check" id="affectsMany" />
+            <span class="check-box"></span>
+            Affects many students
+        </label>
+        <label class="checkbox-label">
+            <input asp-for="IsRepeatedIssue" type="checkbox"
+                   class="custom-check" id="isRepeated" />
+            <span class="check-box"></span>
+            Previously reported
+        </label>
+    </div>
+
+    <div class="field" id="affectedCountWrap" style="display:none;">
+        <label>No. of Affected Students</label>
+        <div class="input-box">
+            <i class="fas fa-users ico"></i>
+            <input asp-for="AffectedStudentCount" type="number"
+                   min="1" placeholder="e.g. 50" />
+        </div>
+    </div>
+
+    <div class="field" id="prevRefWrap" style="display:none;">
+        <label>Previous Complaint Reference</label>
+        <div class="input-box">
+            <i class="fas fa-file-alt ico"></i>
+            <input asp-for="PreviousReference"
+                   placeholder="Ref. no. or date" />
+        </div>
+    </div>
+
+    <div class="field f-full">
+        <label>Full Description <span class="req">*</span></label>
+        <div class="input-box no-ico">
+            <textarea asp-for="Description" rows="5"
+                      placeholder="Describe the issue clearly and in detail..."
+                      required></textarea>
+        </div>
+        <span asp-validation-for="Description" class="field-error"></span>
+    </div>
+
+</div>
+
+<input type="hidden" asp-for="Type" />
+<input type="hidden" asp-for="StudentName" />
+<input type="hidden" asp-for="StudentEmail" />
+<input type="hidden" asp-for="StudentRollNo" />
+<input type="hidden" asp-for="StudentDepartment" />
+<input type="hidden" asp-for="StudentPhone" />
+
+<script>
+    document.getElementById('affectsMany')?.addEventListener('change', function () {
+        document.getElementById('affectedCountWrap').style.display =
+            this.checked ? 'block' : 'none';
+    });
+    document.getElementById('isRepeated')?.addEventListener('change', function () {
+        document.getElementById('prevRefWrap').style.display =
+            this.checked ? 'block' : 'none';
+    });
+</script>

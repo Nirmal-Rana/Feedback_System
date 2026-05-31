@@ -1,0 +1,110 @@
+﻿@model CollegeIssueManagement.Models.ViewModels.FacultyFeedbackViewModel
+
+<div class="fields-grid">
+
+    <div class="field">
+        <label>Faculty Name <span class="req">*</span></label>
+        <div class="input-box">
+            <i class="fas fa-chalkboard-teacher ico"></i>
+            <input asp-for="FacultyName"
+                   placeholder="e.g. Mr. Ram Bahadur" required />
+        </div>
+        <span asp-validation-for="FacultyName" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label>Subject / Course <span class="req">*</span></label>
+        <div class="input-box">
+            <i class="fas fa-book ico"></i>
+            <input asp-for="CourseName"
+                   placeholder="e.g. Database Management" required />
+        </div>
+        <span asp-validation-for="CourseName" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label>Feedback Type <span class="req">*</span></label>
+        <div class="input-box no-ico sel-box">
+            <select asp-for="FeedbackType" required>
+                <option value="">Select type</option>
+                <option>Positive Feedback</option>
+                <option>Constructive Feedback</option>
+                <option>Suggestion</option>
+                <option>Complaint</option>
+            </select>
+        </div>
+        <span asp-validation-for="FeedbackType" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label>Rating (1 = Poor, 5 = Excellent)</label>
+        <div style="display:flex; gap:8px; margin-top:4px;" id="starRow">
+            @for (int i = 1; i <= 5; i++)
+            {
+                <button type="button" class="star-btn" data-val="@i"
+                        style="background:none; border:none; font-size:1.8rem;
+                    color:#e2e8f0; cursor:pointer; padding:0;
+                    transition:color 0.15s; line-height:1;">
+                    &#9733;
+                </button>
+            }
+        </div>
+        <input asp-for="Rating" type="hidden" id="ratingVal" />
+        <span asp-validation-for="Rating" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label>Specific Feedback <span class="req">*</span></label>
+        <div class="input-box no-ico">
+            <textarea asp-for="SpecificFeedback" rows="4"
+                      placeholder="Describe your feedback in detail..."
+                      required></textarea>
+        </div>
+        <span asp-validation-for="SpecificFeedback" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label>Description / Summary <span class="req">*</span></label>
+        <div class="input-box no-ico">
+            <textarea asp-for="Description" rows="3"
+                      placeholder="Brief summary..." required></textarea>
+        </div>
+        <span asp-validation-for="Description" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label class="checkbox-label">
+            <input asp-for="IsAnonymous" type="checkbox" class="custom-check" />
+            <span class="check-box"></span>
+            Submit anonymously — my name won't be shown to the faculty
+        </label>
+    </div>
+
+</div>
+
+<input type="hidden" asp-for="Type" />
+<input type="hidden" asp-for="StudentName" />
+<input type="hidden" asp-for="StudentEmail" />
+<input type="hidden" asp-for="StudentRollNo" />
+<input type="hidden" asp-for="StudentDepartment" />
+<input type="hidden" asp-for="StudentPhone" />
+
+<script>
+    const stars   = document.querySelectorAll('.star-btn');
+    const ratingInput = document.getElementById('ratingVal');
+
+    function paintStars(val) {
+        stars.forEach(s => {
+            s.style.color = parseInt(s.dataset.val) <= val ? '#f59e0b' : '#e2e8f0';
+        });
+    }
+
+    stars.forEach(s => {
+        s.addEventListener('mouseover', () => paintStars(s.dataset.val));
+        s.addEventListener('mouseout',  () => paintStars(ratingInput.value || 0));
+        s.addEventListener('click',     () => {
+            ratingInput.value = s.dataset.val;
+            paintStars(s.dataset.val);
+        });
+    });
+</script>

@@ -1,0 +1,353 @@
+﻿@model CollegeIssueManagement.Models.Issue
+@using CollegeIssueManagement.Models
+@using System.Text.Json
+@using System.Text.RegularExpressions
+
+@{
+    ViewData["Title"] = $"Issue #{Model.Id} Details";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    Dictionary<string, JsonElement> extraData = null;
+    if (!string.IsNullOrEmpty(Model.AdditionalData))
+    {
+        try { extraData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(Model.AdditionalData); }
+        catch { }
+    }
+}
+
+<style>
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 20px;
+        font-size: 0.95rem;
+    }
+    .back-btn:hover { color: #764ba2; text-decoration: none; }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @@media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
+
+    .card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+    .card-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .card-header h3 { margin: 0; font-size: 1rem; color: #333; }
+    .card-header i  { color: #667eea; font-size: 1.1rem; }
+    .card-body { padding: 24px; }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f8f8f8;
+        font-size: 0.92rem;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #888; font-weight: 600; min-width: 140px; }
+    .info-value { color: #333; text-align: right; font-weight: 500; }
+
+    .status-badge {
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+    .status-Pending  { background: #fff3cd; color: #856404; }
+    .status-Approved { background: #d1ecf1; color: #0c5460; }
+    .status-Resolved { background: #d4edda; color: #155724; }
+    .status-Rejected { background: #f8d7da; color: #721c24; }
+
+    .type-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        background: #e8eaff;
+        color: #667eea;
+    }
+
+    .description-box {
+        background: #f8f9ff;
+        border-left: 4px solid #667eea;
+        padding: 16px;
+        border-radius: 0 10px 10px 0;
+        font-size: 0.95rem;
+        color: #444;
+        line-height: 1.6;
+    }
+
+    .status-form { display: flex; flex-direction: column; gap: 14px; }
+    .status-form select, .status-form textarea {
+        width: 100%;
+        padding: 11px 14px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 0.92rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .status-form select:focus,
+    .status-form textarea:focus { border-color: #667eea; }
+
+    .btn-update {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        width: 100%;
+        transition: opacity 0.2s;
+    }
+    .btn-update:hover { opacity: 0.88; }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        padding: 12px 18px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        font-weight: 600;
+        border-left: 4px solid #28a745;
+    }
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 12px 18px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        font-weight: 600;
+        border-left: 4px solid #dc3545;
+    }
+
+    .page-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title-row h1 { font-size: 1.5rem; margin: 0; color: #333; }
+</style>
+
+<a asp-action="Issues" class="back-btn">
+    <i class="fas fa-arrow-left"></i> Back to Issues
+</a>
+
+<div class="page-title-row">
+    <h1><i class="fas fa-file-alt" style="color:#667eea"></i> Issue #@Model.Id</h1>
+    <span class="status-badge status-@Model.Status"
+          style="font-size:0.95rem; padding:7px 18px;">
+        @Model.Status
+    </span>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-success">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-danger">
+        <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+    </div>
+}
+
+<div class="detail-grid">
+
+    @* LEFT COLUMN *@
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-graduate"></i>
+                <h3>Student Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value">@Model.StudentName</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Roll Number</span>
+                    <span class="info-value">@Model.StudentRollNo</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Department</span>
+                    <span class="info-value">@Model.StudentDepartment</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">
+                        <a href="mailto:@Model.StudentEmail">@Model.StudentEmail</a>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Phone</span>
+                    <span class="info-value">@Model.StudentPhone</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i>
+                <h3>Issue Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Issue Type</span>
+                    <span class="info-value">
+                        <span class="type-badge">@Model.Type</span>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">
+                        <span class="status-badge status-@Model.Status">@Model.Status</span>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Submitted On</span>
+                    <span class="info-value">
+                        @Model.SubmittedDate.ToString("dd MMM yyyy, hh:mm tt")
+                    </span>
+                </div>
+                @if (Model.ResolvedDate.HasValue)
+                {
+                    <div class="info-row">
+                        <span class="info-label">Resolved On</span>
+                        <span class="info-value">
+                            @Model.ResolvedDate.Value.ToString("dd MMM yyyy, hh:mm tt")
+                        </span>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.AdminRemarks))
+                {
+                    <div class="info-row">
+                        <span class="info-label">Admin Remarks</span>
+                        <span class="info-value">@Model.AdminRemarks</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-comment-dots"></i>
+                <h3>Description</h3>
+            </div>
+            <div class="card-body">
+                <div class="description-box">@Model.Description</div>
+            </div>
+        </div>
+    </div>
+
+    @* RIGHT COLUMN *@
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-edit"></i>
+                <h3>Update Issue Status</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="UpdateIssueStatus" method="post" class="status-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div>
+                        <label style="font-weight:600; margin-bottom:6px;
+                                      display:block; font-size:0.87rem; color:#555;">
+                            New Status
+                        </label>
+                        <select name="status">
+                            @foreach (var s in Enum.GetValues(typeof(IssueStatus))
+                                                    .Cast<IssueStatus>())
+                            {
+                                if (s == Model.Status)
+                                {
+                                    <option value="@s" selected>@s</option>
+                                }
+                                else
+                                {
+                                    <option value="@s">@s</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-weight:600; margin-bottom:6px;
+                                      display:block; font-size:0.87rem; color:#555;">
+                            Remarks (optional)
+                        </label>
+                        <textarea name="remarks" rows="3"
+                                  placeholder="Add any remarks for the student...">@Model.AdminRemarks</textarea>
+                    </div>
+                    <button type="submit" class="btn-update">
+                        <i class="fas fa-save"></i> Update Status
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        @if (extraData != null && extraData.Count > 0)
+        {
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Form-Specific Details</h3>
+                </div>
+                <div class="card-body" style="padding:0;">
+                    @{
+                        var skipFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            "StudentName","StudentEmail","StudentRollNo",
+                            "StudentDepartment","StudentPhone","Type",
+                            "Description","$type"
+                        };
+                    }
+                    @foreach (var kv in extraData)
+                    {
+                        if (skipFields.Contains(kv.Key)) continue;
+                        var rawVal = kv.Value.ToString();
+                        if (string.IsNullOrWhiteSpace(rawVal) ||
+                            rawVal == "0" || rawVal == "false") continue;
+
+                        @* Fix: assign label to variable first — avoids Razor/Regex conflict *@
+                        var fieldLabel = Regex.Replace(kv.Key, "([A-Z])", " $1").Trim();
+                        var displayVal = rawVal == "true" ? "Yes" : rawVal;
+
+                        <div class="info-row" style="padding:11px 24px;">
+                            <span class="info-label"
+                                  style="text-transform:none; font-size:0.87rem;">
+                                @fieldLabel
+                            </span>
+                            <span class="info-value"
+                                  style="font-size:0.87rem; max-width:55%;">
+                                @displayVal
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+</div>

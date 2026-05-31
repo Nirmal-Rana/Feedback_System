@@ -1,0 +1,742 @@
+﻿@model CollegeIssueManagement.Models.ViewModels.BaseIssueViewModel
+@using CollegeIssueManagement.Models.ViewModels
+
+@{
+    ViewData["Title"] = $"Submit {ViewBag.IssueType} Issue";
+    var issueType = ViewBag.IssueType as string;
+
+    // Single consistent purple color for ALL issue types
+    var typeConfig = issueType switch {
+        "Internet"            => (Icon: "fa-wifi",               Color: "#667eea", Light: "#f0f0ff", Label: "Internet Issue"),
+        "IDCard"              => (Icon: "fa-id-card",            Color: "#667eea", Light: "#f0f0ff", Label: "ID Card Issue"),
+        "Internship"          => (Icon: "fa-briefcase",          Color: "#667eea", Light: "#f0f0ff", Label: "Internship Issue"),
+        "JobOpportunity"      => (Icon: "fa-building",           Color: "#667eea", Light: "#f0f0ff", Label: "Job Opportunity"),
+        "FacultyFeedback"     => (Icon: "fa-chalkboard-teacher", Color: "#667eea", Light: "#f0f0ff", Label: "Faculty Feedback"),
+        "Counselling"         => (Icon: "fa-hands-helping",      Color: "#667eea", Light: "#f0f0ff", Label: "Counselling"),
+        "ManagementAttention" => (Icon: "fa-bullhorn",           Color: "#667eea", Light: "#f0f0ff", Label: "Management Attention"),
+        _                     => (Icon: "fa-file-alt",           Color: "#667eea", Light: "#f0f0ff", Label: "General Issue")
+    };
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <style>
+        :root {
+            --accent:       @typeConfig.Color;
+            --accent-light: @typeConfig.Light;
+            --text-dark:    #0f172a;
+            --text-muted:   #64748b;
+            --border:       #e2e8f0;
+            --bg:           #f1f5f9;
+            --white:        #ffffff;
+            --radius:       14px;
+            --radius-sm:    9px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-dark);
+        }
+
+        .page-shell {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: var(--accent);
+            padding: 44px 32px;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar::before,
+        .sidebar::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .sidebar::before {
+            width: 260px; height: 260px;
+            background: rgba(255,255,255,0.07);
+            top: -80px; right: -80px;
+        }
+
+        .sidebar::after {
+            width: 180px; height: 180px;
+            background: rgba(0,0,0,0.08);
+            bottom: -60px; left: -60px;
+        }
+
+        .sidebar-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 40px;
+            z-index: 1;
+            position: relative;
+            width: fit-content;
+            transition: color 0.2s;
+        }
+        .sidebar-back:hover { color: white; text-decoration: none; }
+
+        .sidebar-icon-box {
+            width: 68px; height: 68px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.22);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            color: white;
+            margin-bottom: 22px;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(6px);
+        }
+
+        .sidebar-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.65rem;
+            color: white;
+            line-height: 1.25;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar-desc {
+            font-size: 0.83rem;
+            color: rgba(255,255,255,0.68);
+            line-height: 1.65;
+            position: relative;
+            z-index: 1;
+        }
+
+        .steps-wrapper {
+            margin-top: auto;
+            padding-top: 32px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .steps-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 20px;
+        }
+
+        .step-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            position: relative;
+            padding-bottom: 26px;
+        }
+        .step-row:last-child { padding-bottom: 0; }
+
+        .step-row:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 13px; top: 28px;
+            width: 2px;
+            height: calc(100% - 14px);
+            background: rgba(255,255,255,0.18);
+        }
+
+        .step-circle {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.55);
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .step-circle.is-active {
+            background: white;
+            border-color: white;
+            color: var(--accent);
+            box-shadow: 0 0 0 5px rgba(255,255,255,0.18);
+        }
+
+        .step-circle.is-done {
+            background: rgba(255,255,255,0.88);
+            border-color: white;
+            color: var(--accent);
+        }
+
+        .step-info { padding-top: 3px; }
+        .step-info strong {
+            display: block;
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.92);
+            margin-bottom: 2px;
+        }
+        .step-info span {
+            font-size: 0.74rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .form-area { padding: 44px 52px 64px; overflow-y: auto; }
+
+        .form-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .form-topbar h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.6rem;
+            color: var(--text-dark);
+            line-height: 1.2;
+        }
+        .form-topbar h1 em { font-style: normal; color: var(--accent); }
+
+        .required-pill {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--white);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .error-box {
+            background: #fff5f5;
+            border: 1px solid #fecaca;
+            border-left: 4px solid #ef4444;
+            border-radius: var(--radius-sm);
+            padding: 13px 16px;
+            margin-bottom: 24px;
+            font-size: 0.86rem;
+            color: #b91c1c;
+        }
+
+        .form-section {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 26px 28px;
+            margin-bottom: 18px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .section-head-icon {
+            width: 36px; height: 36px;
+            background: var(--accent-light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.88rem;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .section-head-text h2 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-dark);
+        }
+
+        .section-head-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .f-full { grid-column: 1 / -1; }
+
+        .field { display: flex; flex-direction: column; gap: 6px; }
+
+        .field label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+        .field label .req { color: #ef4444; margin-left: 2px; }
+
+        .input-box { position: relative; }
+
+        .input-box .ico {
+            position: absolute;
+            left: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: #cbd5e1;
+            font-size: 0.82rem;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+        .input-box:focus-within .ico { color: var(--accent); }
+
+        .input-box input,
+        .input-box select,
+        .input-box textarea {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .input-box input::placeholder,
+        .input-box textarea::placeholder { color: #94a3b8; }
+
+        .input-box input:focus,
+        .input-box select:focus,
+        .input-box textarea:focus {
+            border-color: var(--accent);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .input-box.no-ico input,
+        .input-box.no-ico select,
+        .input-box.no-ico textarea { padding-left: 12px; }
+
+        .input-box.sel-box::after {
+            content: '\f107';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            pointer-events: none;
+            font-size: 0.78rem;
+        }
+
+        .input-box textarea { resize: vertical; min-height: 92px; line-height: 1.55; }
+
+        .field-error {
+            font-size: 0.74rem;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Custom checkbox */
+        .checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            user-select: none;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .checkbox-label:hover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+        .checkbox-label input.custom-check { display: none; }
+        .check-box {
+            width: 18px; height: 18px;
+            border: 2px solid #cbd5e1;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            background: white;
+        }
+        .checkbox-label:has(input:checked) .check-box {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .checkbox-label:has(input:checked) .check-box::after {
+            content: '✓';
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
+        .checkbox-label:has(input:checked) {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .submit-bar {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .submit-note { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; }
+        .submit-note strong { color: var(--text-dark); font-weight: 700; }
+
+        .btn-submit {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 12px 28px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(102,126,234,0.3);
+        }
+        .btn-submit:hover {
+            filter: brightness(1.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(102,126,234,0.38);
+        }
+        .btn-submit:active { transform: translateY(0); }
+
+        @@media (max-width: 860px) {
+            .page-shell { grid-template-columns: 1fr; }
+            .sidebar { position: static; height: auto; padding: 28px 24px 32px; }
+            .steps-wrapper { display: none; }
+            .form-area { padding: 24px 18px 48px; }
+            .fields-grid { grid-template-columns: 1fr; }
+            .submit-bar { flex-direction: column; align-items: stretch; }
+            .btn-submit { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-shell">
+
+    @* ── SIDEBAR ── *@
+    <aside class="sidebar">
+        <a href="/" class="sidebar-back">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </a>
+        <div class="sidebar-icon-box">
+            <i class="fas @typeConfig.Icon"></i>
+        </div>
+        <h2 class="sidebar-title">Submit<br />@typeConfig.Label</h2>
+        <p class="sidebar-desc">
+            Fill in the form carefully. Your submission will be reviewed
+            by the college admin and you'll receive an email update.
+        </p>
+        <div class="steps-wrapper">
+            <p class="steps-label">How it works</p>
+            <div class="step-row">
+                <div class="step-circle is-active" id="dot1">1</div>
+                <div class="step-info">
+                    <strong>Personal Info</strong>
+                    <span>Name, email &amp; roll no.</span>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-circle" id="dot2">2</div>
+                <div class="step-info">
+                    <strong>Issue Details</strong>
+                    <span>Describe your issue</span>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-circle" id="dot3">3</div>
+                <div class="step-info">
+                    <strong>Submit &amp; Track</strong>
+                    <span>Get your reference ID</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    @* ── FORM AREA ── *@
+    <div class="form-area">
+        <div class="form-topbar">
+            <h1>New <em>@typeConfig.Label</em></h1>
+            <span class="required-pill">
+                <i class="fas fa-asterisk" style="font-size:0.55rem; margin-right:4px;"></i>
+                Required fields
+            </span>
+        </div>
+
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="error-box">
+                <i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>
+                <div asp-validation-summary="ModelOnly"></div>
+            </div>
+        }
+
+        <form asp-action="CreateIssue" method="post"
+              enctype="multipart/form-data" id="issueForm" novalidate>
+
+            @* Section 1 — Personal Info *@
+            <div class="form-section" id="section1">
+                <div class="section-head">
+                    <div class="section-head-icon"><i class="fas fa-user"></i></div>
+                    <div class="section-head-text">
+                        <h2>Personal Information</h2>
+                        <p>Your basic student details</p>
+                    </div>
+                </div>
+                <div class="fields-grid">
+                    <div class="field">
+                        <label asp-for="StudentName">Full Name <span class="req">*</span></label>
+                        <div class="input-box">
+                            <i class="fas fa-user ico"></i>
+                            <input asp-for="StudentName" placeholder="e.g. Aarav Sharma" required />
+                        </div>
+                        <span asp-validation-for="StudentName" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="StudentRollNo">Roll Number <span class="req">*</span></label>
+                        <div class="input-box">
+                            <i class="fas fa-hashtag ico"></i>
+                            <input asp-for="StudentRollNo" placeholder="e.g. 2021-BIT-045" required />
+                        </div>
+                        <span asp-validation-for="StudentRollNo" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="StudentEmail">Email Address <span class="req">*</span></label>
+                        <div class="input-box">
+                            <i class="fas fa-envelope ico"></i>
+                            <input asp-for="StudentEmail" type="email"
+                                   placeholder="you@college.edu.np" required />
+                        </div>
+                        <span asp-validation-for="StudentEmail" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="StudentPhone">Phone Number <span class="req">*</span></label>
+                        <div class="input-box">
+                            <i class="fas fa-phone ico"></i>
+                            <input asp-for="StudentPhone" type="tel"
+                                   placeholder="98XXXXXXXX" required />
+                        </div>
+                        <span asp-validation-for="StudentPhone" class="field-error"></span>
+                    </div>
+                    <div class="field f-full">
+                        <label asp-for="StudentDepartment">Department <span class="req">*</span></label>
+                        <div class="input-box no-ico sel-box">
+                            <select asp-for="StudentDepartment" required>
+                                <option value="">Select your department</option>
+                                <option>BIT — Bachelor of Information Technology</option>
+                                <option>BCA — Bachelor of Computer Applications</option>
+                                <option>BBS — Bachelor of Business Studies</option>
+                                <option>BBA — Bachelor of Business Administration</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="StudentDepartment" class="field-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            @* Section 2 — Issue Details *@
+            <div class="form-section" id="section2">
+                <div class="section-head">
+                    <div class="section-head-icon">
+                        <i class="fas @typeConfig.Icon"></i>
+                    </div>
+                    <div class="section-head-text">
+                        <h2>Issue Details</h2>
+                        <p>Specific information about your @issueType issue</p>
+                    </div>
+                </div>
+
+                @if (issueType == "Internet")
+                {
+                    @await Html.PartialAsync("~/Views/Home/IssueForms/_InternetForm.cshtml",
+                        Model as InternetIssueViewModel)
+                }
+                else if (issueType == "IDCard")
+                {
+                    @await Html.PartialAsync("~/Views/Home/IssueForms/_IDCardForm.cshtml",
+                        Model as IDCardIssueViewModel)
+                }
+                else if (issueType == "Internship")
+                {
+                    @await Html.PartialAsync("~/Views/Home/IssueForms/_InternshipForm.cshtml",
+                        Model as InternshipIssueViewModel)
+                }
+                else if (issueType == "JobOpportunity")
+                {
+                    @await Html.PartialAsync("~/Views/Home/IssueForms/_JobOpportunityForm.cshtml",
+                        Model as JobOpportunityViewModel)
+                }
+                else if (issueType == "FacultyFeedback")
+                {
+                    @await Html.PartialAsync("~/Views/Home/IssueForms/_FacultyFeedbackForm.cshtml",
+                        Model as FacultyFeedbackViewModel)
+                }
+                else if (issueType == "Counselling")
+                {
+                    @await Html.PartialAsync("~/Views/Home/IssueForms/_CounsellingForm.cshtml",
+                        Model as CounsellingViewModel)
+                }
+                else if (issueType == "ManagementAttention")
+                {
+                    @await Html.PartialAsync("~/Views/Home/IssueForms/_ManagementAttentionForm.cshtml",
+                        Model as ManagementAttentionViewModel)
+                }
+                else
+                {
+                    <div class="field f-full">
+                        <label asp-for="Description">
+                            Issue Description <span class="req">*</span>
+                        </label>
+                        <div class="input-box no-ico">
+                            <textarea asp-for="Description" rows="5"
+                                      placeholder="Describe your issue clearly..."
+                                      required></textarea>
+                        </div>
+                        <span asp-validation-for="Description" class="field-error"></span>
+                    </div>
+                    <input type="hidden" asp-for="Type" />
+                }
+            </div>
+
+            @* Submit bar *@
+            <div class="submit-bar">
+                <p class="submit-note">
+                    <strong>Ready to submit?</strong><br />
+                    You'll receive a reference ID and email updates on your issue status.
+                </p>
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    <span id="submitTxt">Submit Issue</span>
+                    <i class="fas fa-spinner fa-spin" id="submitSpin" style="display:none;"></i>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
+<script>
+    const dot1 = document.getElementById('dot1');
+    const dot2 = document.getElementById('dot2');
+    const dot3 = document.getElementById('dot3');
+
+    function markDone(dot) {
+        dot.classList.remove('is-active');
+        dot.classList.add('is-done');
+        dot.innerHTML = '<i class="fas fa-check" style="font-size:0.62rem;"></i>';
+    }
+
+    const sec2 = document.getElementById('section2');
+    if (sec2) {
+        new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting) {
+                markDone(dot1);
+                dot2.classList.add('is-active');
+            }
+        }, { threshold: 0.2 }).observe(sec2);
+    }
+
+    document.getElementById('issueForm').addEventListener('submit', function () {
+        markDone(dot2);
+        dot3.classList.add('is-active');
+        const btn  = document.getElementById('submitBtn');
+        const txt  = document.getElementById('submitTxt');
+        const spin = document.getElementById('submitSpin');
+        btn.disabled       = true;
+        txt.textContent    = 'Submitting…';
+        spin.style.display = 'inline-block';
+    });
+
+    const fields = document.querySelectorAll('input:not([type=hidden]), select, textarea');
+    function save() {
+        const d = {};
+        fields.forEach(f => { if (f.name) d[f.name] = f.value; });
+        sessionStorage.setItem('iform_@issueType', JSON.stringify(d));
+    }
+    function restore() {
+        const raw = sessionStorage.getItem('iform_@issueType');
+        if (!raw) return;
+        const d = JSON.parse(raw);
+        fields.forEach(f => { if (f.name && d[f.name]) f.value = d[f.name]; });
+    }
+    fields.forEach(f => f.addEventListener('input', save));
+    document.getElementById('issueForm').addEventListener('submit',
+        () => sessionStorage.removeItem('iform_@issueType'));
+    restore();
+</script>
+</body>
+</html>
