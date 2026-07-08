@@ -15,7 +15,10 @@ namespace CollegeIssueManagement.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<DocumentAttachment> DocumentAttachments { get; set; }
         public DbSet<Admin> Admins { get; set; }
-
+        public DbSet<AbsenceRecord> AbsenceRecords { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
+        public DbSet<TeacherFeedback> TeacherFeedbacks { get; set; }
+        public DbSet<QRCodeSetting> QRCodeSettings { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

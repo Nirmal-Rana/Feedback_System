@@ -1,0 +1,265 @@
+﻿@model List<CollegeIssueManagement.Models.QRCodeSetting>
+@{
+    ViewData["Title"] = "Manage QR Codes";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .qr-manage-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    .qr-card {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+    }
+
+        .qr-card.enabled {
+            border-color: #dcfce7;
+        }
+
+        .qr-card.disabled {
+            border-color: #fee2e2;
+            opacity: 0.75;
+        }
+
+    .qr-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        background: #ede9fe;
+        color: #667eea;
+    }
+
+    .qr-card.disabled .qr-icon {
+        background: #f1f5f9;
+        color: #aaa;
+    }
+
+    .qr-info {
+        flex: 1;
+    }
+
+    .qr-name {
+        font-weight: 700;
+        font-size: 0.92rem;
+        color: #1a1a2e;
+    }
+
+    .qr-type {
+        font-size: 0.76rem;
+        color: #888;
+        margin-top: 2px;
+    }
+
+    .qr-status {
+        font-size: 0.74rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin-top: 4px;
+        display: inline-block;
+    }
+
+    .status-on {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .status-off {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+
+    /* Toggle switch */
+    .toggle-switch {
+        position: relative;
+        width: 48px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+    .toggle-slider {
+        position: absolute;
+        inset: 0;
+        background: #e2e8f0;
+        border-radius: 13px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+
+    .toggle-switch input:checked + .toggle-slider {
+        background: #667eea;
+    }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(22px);
+        }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .page-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1a1a2e;
+    }
+
+    .page-sub {
+        font-size: 0.84rem;
+        color: #888;
+    }
+
+    .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #1a1a2e;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .toast.show {
+            display: flex;
+        }
+
+    @@media (max-width: 900px) {
+        .qr-manage-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 500px) {
+        .qr-manage-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <div class="page-title">
+            <i class="fas fa-qrcode" style="color:#667eea;margin-right:8px;"></i>
+            Manage QR Codes
+        </div>
+        <div class="page-sub">
+            Toggle QR codes on/off. Disabled QRs are hidden from students.
+        </div>
+    </div>
+</div>
+
+<div class="qr-manage-grid">
+    @foreach (var q in Model)
+    {
+        <div class="qr-card @(q.IsEnabled ? "enabled" : "disabled")"
+             id="card-@q.IssueType">
+            <div class="qr-icon">
+                <i class="fas @q.Icon"></i>
+            </div>
+            <div class="qr-info">
+                <div class="qr-name">@q.DisplayName</div>
+                <div class="qr-type">@q.IssueType</div>
+                <span class="qr-status @(q.IsEnabled ? "status-on" : "status-off")"
+                      id="status-@q.IssueType">
+                    @(q.IsEnabled ? "✓ Visible to students" : "✗ Hidden")
+                </span>
+            </div>
+            <label class="toggle-switch"
+                   title="@(q.IsEnabled ? "Click to disable" : "Click to enable")">
+                <input type="checkbox"
+                @(q.IsEnabled ? "checked" : "")
+                       onchange="toggleQR('@q.IssueType', this.checked)" />
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+    }
+</div>
+
+<div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg"></span>
+</div>
+
+<script>
+    async function toggleQR(issueType, enabled) {
+        const card   = document.getElementById(`card-${issueType}`);
+        const status = document.getElementById(`status-${issueType}`);
+
+        try {
+            const res = await fetch('/Admin/ToggleQRCode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ issueType, enabled })
+            });
+
+            if (res.ok) {
+                // Update card style
+                card.className =
+                    `qr-card ${enabled ? 'enabled' : 'disabled'}`;
+                status.className =
+                    `qr-status ${enabled ? 'status-on' : 'status-off'}`;
+                status.textContent = enabled
+                    ? '✓ Visible to students' : '✗ Hidden';
+
+                // Show toast
+                const msg = enabled
+                    ? `${issueType} QR is now visible`
+                    : `${issueType} QR is now hidden`;
+                showToast(msg);
+            }
+        } catch {
+            showToast('Error updating QR. Please try again.');
+        }
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastMsg').textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+</script>

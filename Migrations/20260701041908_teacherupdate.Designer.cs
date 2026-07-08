@@ -4,6 +4,7 @@ using CollegeIssueManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CollegeIssueManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260701041908_teacherupdate")]
+    partial class teacherupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -113,7 +116,7 @@ namespace CollegeIssueManagement.Migrations
                             Id = 1,
                             Email = "admin@texascollege.edu.np",
                             FullName = "Administrator",
-                            LastLogin = new DateTime(2026, 7, 2, 19, 52, 21, 666, DateTimeKind.Local).AddTicks(2282),
+                            LastLogin = new DateTime(2026, 6, 30, 21, 19, 8, 166, DateTimeKind.Local).AddTicks(4430),
                             Password = "Admin@1991",
                             Username = "Admin"
                         });

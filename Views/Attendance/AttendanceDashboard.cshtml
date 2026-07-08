@@ -1,0 +1,1288 @@
+﻿@model List<CollegeIssueManagement.Models.AbsenceRecord>
+@{
+    Layout = null;
+    int today = ViewBag.TodayCount;
+    int week = ViewBag.WeekCount;
+    int month = ViewBag.MonthCount;
+    int total = ViewBag.TotalCount;
+    int pending = ViewBag.PendingCount;
+    int curPage = ViewBag.CurrentPage;
+    int totPages = ViewBag.TotalPages;
+    int totFilt = ViewBag.TotalFiltered;
+
+    string df = ViewBag.DateFilter as string ?? "";
+    string sf = ViewBag.SemesterFilter as string ?? "";
+    string secF = ViewBag.SectionFilter as string ?? "";
+    string stf = ViewBag.StatusFilter as string ?? "";
+
+    string prevCls = curPage == 1 ? "pg-btn off" : "pg-btn";
+    string nextCls = curPage == totPages ? "pg-btn off" : "pg-btn";
+    string pgBase = $"?dateFilter={df}&semesterFilter={sf}&sectionFilter={secF}&statusFilter={stf}";
+
+    var bySection = Model.GroupBy(r => r.Section)
+                         .ToDictionary(g => g.Key, g => g.Count());
+    var bySemester = Model.GroupBy(r => r.Semester)
+                         .ToDictionary(g => g.Key, g => g.Count());
+    var todayDate = DateTime.Today.ToString("yyyy-MM-dd");
+    var weekDate = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek)
+                             .ToString("yyyy-MM-dd");
+    var monthDate = new DateTime(DateTime.Today.Year,
+                                  DateTime.Today.Month, 1)
+                             .ToString("yyyy-MM-dd");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance Dashboard</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        }
+
+        body {
+        font-family: 'Segoe UI', sans-serif;
+        background: #f1f5f9;
+        color: #1a1a2e;
+        }
+
+        /* ── App Shell ── */
+        .app-shell {
+        display: flex;
+        min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        .app-sidebar {
+        width: 240px;
+        background:white gray;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        }
+
+        .sidebar-brand {
+        padding: 20px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .sidebar-brand-icon {
+        width: 36px;
+        height: 36px;
+        background: #3b82f6;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1rem;
+        flex-shrink: 0;
+        }
+
+        .sidebar-brand-text {
+        color: #f1f5f9;
+        font-weight: 600;
+        font-size: 0.94rem;
+        letter-spacing: 0.2px;
+        }
+
+        .sidebar-nav {
+        flex: 1;
+        padding: 12px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow-y: auto;
+        }
+
+        .sidebar-section-label {
+        font-size: 0.66rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #475569;
+        padding: 12px 10px 6px;
+        }
+
+        .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: 7px;
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.15s ease;
+        position: relative;
+        }
+
+        .sidebar-link i {
+        font-size: 0.88rem;
+        width: 16px;
+        text-align: center;
+        flex-shrink: 0;
+        }
+
+        .sidebar-link:hover {
+        background: rgba(255,255,255,0.05);
+        color: #e2e8f0;
+        text-decoration: none;
+        }
+
+        .sidebar-link.active {
+        background: #1d4ed8;
+        color: white;
+        font-weight: 600;
+        }
+
+        .sidebar-link.active i {
+        color: #93c5fd;
+        }
+
+        .sidebar-footer {
+        padding: 12px 10px;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .sidebar-link.danger {
+        color: #f87171;
+        }
+
+        .sidebar-link.danger:hover {
+        background: rgba(239,68,68,0.1);
+        color: #fca5a5;
+        }
+
+        /* ── Main ── */
+        .app-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        }
+
+        .app-topbar {
+        height: 56px;
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 16px;
+        padding: 0 24px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        }
+
+        .topbar-welcome {
+        font-size: 0.84rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 500;
+        }
+
+        .topbar-welcome i {
+        color: #3b82f6;
+        font-size: 1rem;
+        }
+
+        .app-content {
+        flex: 1;
+        padding: 24px;
+        }
+
+        .container {
+        max-width: 1240px;
+        margin: 0 auto;
+        }
+
+        @@media (max-width: 900px) {
+        .app-sidebar {
+        width: 64px;
+        }
+
+        .sidebar-brand-text,
+        .sidebar-link span,
+        .sidebar-section-label {
+        display: none;
+        }
+
+        .sidebar-link {
+        justify-content: center;
+        padding: 10px;
+        }
+
+        .sidebar-link i {
+        width: auto;
+        }
+
+        .sidebar-brand {
+        justify-content: center;
+        }
+        }
+
+        /* ── Stats ── */
+        .stats {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 14px;
+        margin-bottom: 22px;
+        }
+
+        .stat {
+        background: white;
+        border-radius: 12px;
+        padding: 18px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        text-decoration: none;
+        color: inherit;
+        }
+
+        .stat:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(59,130,246,0.12);
+        border-color: #3b82f6;
+        color: inherit;
+        }
+
+        .stat.active-stat {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        }
+
+        .stat-ico {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+        }
+
+        .stat-num {
+        font-size: 1.6rem;
+        font-weight: 700;
+        line-height: 1;
+        color: #0f172a;
+        }
+
+        .stat-lbl {
+        font-size: 0.7rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 3px;
+        }
+
+        .stat-hint {
+        font-size: 0.66rem;
+        color: #3b82f6;
+        margin-top: 2px;
+        font-weight: 500;
+        }
+
+        /* ── Chart Section ── */
+        .chart-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px 22px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 16px;
+        }
+
+        .chart-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        gap: 10px;
+        }
+
+        .chart-header h2 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #0f172a;
+        }
+
+        .view-toggle {
+        display: flex;
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 3px;
+        }
+
+        .toggle-btn {
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        color: #64748b;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s;
+        }
+
+        .toggle-btn.active {
+        background: white;
+        color: #0f172a;
+        font-weight: 600;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .period-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 16px;
+        }
+
+        .period-tab {
+        padding: 5px 14px;
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        }
+
+        .period-tab.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+        }
+
+        .chart-box {
+        height: 220px;
+        }
+
+        /* ── Toolbar ── */
+        .toolbar {
+        background: white;
+        border-radius: 12px;
+        padding: 14px 18px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        }
+
+        .toolbar select {
+        padding: 8px 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        font-size: 0.84rem;
+        font-family: inherit;
+        background: #f8fafc;
+        color: #334155;
+        outline: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 8px center;
+        background-repeat: no-repeat;
+        background-size: 1.1rem;
+        padding-right: 30px;
+        cursor: pointer;
+        }
+
+        .toolbar select:focus {
+        border-color: #3b82f6;
+        outline: none;
+        }
+
+        .ml-auto {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+        padding: 8px 16px;
+        border-radius: 7px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: all 0.15s;
+        white-space: nowrap;
+        }
+
+        .btn-blue {
+        background: #3b82f6;
+        color: white;
+        }
+
+        .btn-blue:hover {
+        background: #2563eb;
+        color: white;
+        }
+
+        .btn-red {
+        background: #ef4444;
+        color: white;
+        }
+
+        .btn-red:hover {
+        background: #dc2626;
+        }
+
+        .btn-green {
+        background: #22c55e;
+        color: white;
+        }
+
+        .btn-green:hover {
+        background: #16a34a;
+        color: white;
+        }
+
+        .btn-outline {
+        background: white;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        }
+
+        .btn-outline:hover {
+        background: #f8fafc;
+        color: #0f172a;
+        }
+
+        .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        }
+
+        /* ── Export bar ── */
+        .export-bar {
+        background: white;
+        border-radius: 12px;
+        padding: 13px 18px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        }
+
+        .export-bar label {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        }
+
+        /* ── Table ── */
+        .table-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        }
+
+        .table-top {
+        padding: 14px 18px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fafafa;
+        }
+
+        .table-top h2 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #0f172a;
+        }
+
+        .table-top span {
+        font-size: 0.78rem;
+        color: #64748b;
+        }
+
+        table {
+        width: 100%;
+        border-collapse: collapse;
+        }
+
+        thead th {
+        background: #f8fafc;
+        padding: 11px 14px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+        }
+
+        thead th:first-child {
+        width: 42px;
+        text-align: center;
+        }
+
+        tbody tr {
+        border-bottom: 1px solid #f8fafc;
+        transition: background 0.1s;
+        }
+
+        tbody tr:hover {
+        background: #fafbff;
+        }
+
+        tbody td {
+        padding: 12px 14px;
+        font-size: 0.85rem;
+        vertical-align: middle;
+        }
+
+        tbody td:first-child {
+        text-align: center;
+        }
+
+        .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        }
+
+        .badge-ok {
+        background: #dcfce7;
+        color: #15803d;
+        }
+
+        .badge-pnd {
+        background: #fef9c3;
+        color: #92400e;
+        }
+
+        .act-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        transition: all 0.12s;
+        }
+
+        .act-view {
+        background: #eff6ff;
+        color: #3b82f6;
+        }
+
+        .act-view:hover {
+        background: #3b82f6;
+        color: white;
+        }
+
+        .act-del {
+        background: #fee2e2;
+        color: #ef4444;
+        }
+
+        .act-del:hover {
+        background: #ef4444;
+        color: white;
+        }
+
+        /* ── Pagination ── */
+        .pager {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 14px;
+        border-top: 1px solid #f1f5f9;
+        }
+
+        .pg-btn {
+        width: 33px;
+        height: 33px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.84rem;
+        font-weight: 600;
+        text-decoration: none;
+        color: #475569;
+        background: white;
+        border: 1px solid #e2e8f0;
+        transition: all 0.12s;
+        }
+
+        .pg-btn:hover, .pg-btn.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+        }
+
+        .pg-btn.off {
+        opacity: 0.35;
+        pointer-events: none;
+        }
+
+        .empty {
+        text-align: center;
+        padding: 56px 20px;
+        color: #94a3b8;
+        }
+
+        .empty i {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        display: block;
+        color: #cbd5e1;
+        }
+
+        .list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        background: #f8fafc;
+        border-radius: 9px;
+        margin-bottom: 8px;
+        border: 1px solid #e2e8f0;
+        }
+
+        .list-badge {
+        padding: 3px 12px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: white;
+        }
+
+        @@media (max-width: 900px) {
+        .stats {
+        grid-template-columns: repeat(3, 1fr);
+        }
+        }
+
+        @@media (max-width: 600px) {
+        .stats {
+        grid-template-columns: repeat(2, 1fr);
+        }
+
+        .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        }
+
+        .ml-auto {
+        margin-left: 0;
+        }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- ── Sidebar ── -->
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <span class="sidebar-brand-text">Attendance</span>
+            </div>
+            <nav class="sidebar-nav">
+                <span class="sidebar-section-label">Main</span>
+                <a href="/Attendance/AttendanceDashboard"
+                   class="sidebar-link active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/Attendance/AttendanceDashboard?statusFilter=pending"
+                   class="sidebar-link">
+                    <i class="fas fa-clock"></i>
+                    <span>Pending Review</span>
+                </a>
+                <span class="sidebar-section-label">Export</span>
+                <a href="/Attendance/ExportExcel" class="sidebar-link">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Export Records</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/Attendance/AttendanceLogout"
+                   class="sidebar-link danger">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Logout </span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- ── Main ── -->
+        <div class="app-main">
+            <div class="app-topbar">
+                <span class="topbar-welcome">
+                    <i class="fas fa-building"></i>
+                    Texas College of Management & IT
+                </span>
+            </div>
+
+            <div class="app-content">
+                <div class="container">
+
+                    <!-- Stats -->
+                    <div class="stats">
+                        <a href="?dateFilter=@todayDate"
+                           class="stat @(df == todayDate ? "active-stat" : "")">
+                            <div class="stat-ico" style="background:#ede9fe;">
+                                <i class="fas fa-calendar-day" style="color:#7c3aed;"></i>
+                            </div>
+                            <div>
+                                <div class="stat-num">@today</div>
+                                <div class="stat-lbl">Today</div>
+                                <div class="stat-hint">Click to filter</div>
+                            </div>
+                        </a>
+                        <a href="?dateFilter=@weekDate"
+                           class="stat @(df == weekDate ? "active-stat" : "")">
+                            <div class="stat-ico" style="background:#dbeafe;">
+                                <i class="fas fa-calendar-week" style="color:#2563eb;"></i>
+                            </div>
+                            <div>
+                                <div class="stat-num">@week</div>
+                                <div class="stat-lbl">This Week</div>
+                                <div class="stat-hint">Click to filter</div>
+                            </div>
+                        </a>
+                        <a href="?dateFilter=@monthDate"
+                           class="stat @(df == monthDate ? "active-stat" : "")">
+                            <div class="stat-ico" style="background:#dcfce7;">
+                                <i class="fas fa-calendar-alt" style="color:#16a34a;"></i>
+                            </div>
+                            <div>
+                                <div class="stat-num">@month</div>
+                                <div class="stat-lbl">This Month</div>
+                                <div class="stat-hint">Click to filter</div>
+                            </div>
+                        </a>
+                        <a href="/Attendance/AttendanceDashboard"
+                           class="stat @(df == "" && sf == "" && secF == "" && stf == "" ? "active-stat" : "")">
+                            <div class="stat-ico" style="background:#fef3c7;">
+                                <i class="fas fa-users" style="color:#d97706;"></i>
+                            </div>
+                            <div>
+                                <div class="stat-num">@total</div>
+                                <div class="stat-lbl">All Time</div>
+                                <div class="stat-hint">Show all</div>
+                            </div>
+                        </a>
+                        <a href="?statusFilter=pending"
+                           class="stat @(stf == "pending" ? "active-stat" : "")">
+                            <div class="stat-ico" style="background:#fee2e2;">
+                                <i class="fas fa-clock" style="color:#ef4444;"></i>
+                            </div>
+                            <div>
+                                <div class="stat-num">@pending</div>
+                                <div class="stat-lbl">Unreviewed</div>
+                                <div class="stat-hint">Click to filter</div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Chart section -->
+                    <div class="chart-section">
+                        <div class="chart-header">
+                            <h2>
+                                <i class="fas fa-chart-bar"
+                                   style="color:#3b82f6;margin-right:6px;"></i>
+                                Absence Overview
+                            </h2>
+                            <div class="view-toggle">
+                                <button class="toggle-btn active" id="btnChart"
+                                        onclick="showView('chart')">
+                                    <i class="fas fa-chart-bar"></i> Bar Chart
+                                </button>
+                                <button class="toggle-btn" id="btnList"
+                                        onclick="showView('list')">
+                                    <i class="fas fa-list"></i> List View
+                                </button>
+                            </div>
+                        </div>
+                        <div class="period-tabs">
+                            <button class="period-tab active"
+                                    onclick="switchPeriod('section', this)">
+                                By Section
+                            </button>
+                            <button class="period-tab"
+                                    onclick="switchPeriod('semester', this)">
+                                By Semester
+                            </button>
+                            <button class="period-tab"
+                                    onclick="switchPeriod('class', this)">
+                                By Class
+                            </button>
+                        </div>
+                        <div id="chartView">
+                            <div class="chart-box">
+                                <canvas id="mainChart"></canvas>
+                            </div>
+                        </div>
+                        <div id="listView" style="display:none;">
+                            <div id="listContent"></div>
+                        </div>
+                    </div>
+
+                    <!-- ✅ FIXED: Filter form — all buttons inside form -->
+                    <form method="get"
+                          asp-controller="Attendance"
+                          asp-action="AttendanceDashboard"
+                          id="filterForm">
+                        <div class="toolbar">
+                            <select name="semesterFilter">
+                                <option value="">All Semesters</option>
+                                @foreach (var s in (ViewBag.Semesters
+                                    as List<string> ?? new()))
+                                {
+                                    if (sf == s)
+                                    {
+                                        <option value="@s" selected>@s</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@s">@s</option>
+                                    }
+                                }
+                            </select>
+                            <select name="sectionFilter">
+                                <option value="">All Sections</option>
+                                @foreach (var s in (ViewBag.Sections
+                                    as List<string> ?? new()))
+                                {
+                                    if (secF == s)
+                                    {
+                                        <option value="@s" selected>@s</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@s">@s</option>
+                                    }
+                                }
+                            </select>
+                            <select name="statusFilter">
+                                <option value="">All Status</option>
+                                @if (stf == "pending")
+                                {
+                                    <option value="pending" selected>Unreviewed</option>
+                                }
+                                else
+                                {
+                                    <option value="pending">Unreviewed</option>
+                                }
+                                @if (stf == "reviewed")
+                                {
+                                    <option value="reviewed" selected>Reviewed</option>
+                                }
+                                else
+                                {
+                                    <option value="reviewed">Reviewed</option>
+                                }
+                            </select>
+
+                            @* ✅ FIXED: Filter button submits the form *@
+                            <button type="submit" class="btn btn-blue">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+
+                            @* ✅ FIXED: Clear button resets all filters *@
+                            <button type="button" class="btn btn-outline"
+                                    onclick="clearFilters()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+
+                            <div class="ml-auto">
+                                <button type="button" id="bulkBtn"
+                                        class="btn btn-red" disabled
+                                        onclick="doBulkDelete()">
+                                    <i class="fas fa-trash"></i>
+                                    Delete (<span id="selCount">0</span>)
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Export bar -->
+                    <div class="export-bar">
+                        <label>
+                            <i class="fas fa-file-excel"></i> Export Records
+                        </label>
+                        <a href="/Attendance/ExportExcel" class="btn btn-green">
+                            <i class="fas fa-download"></i> Download All as CSV
+                        </a>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-card">
+                        <div class="table-top">
+                            <h2>
+                                <i class="fas fa-list-ul"
+                                   style="color:#3b82f6;margin-right:6px;"></i>
+                                Absence Records
+                            </h2>
+                            <span>Showing @Model.Count of @totFilt records</span>
+                        </div>
+
+                        @if (Model.Any())
+                        {
+                            <div style="overflow-x:auto;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <input type="checkbox" id="chkAll"
+                                                       onchange="toggleAll(this)" />
+                                            </th>
+                                            <th>#</th>
+                                            <th>Student Name</th>
+                                            <th>LCID</th>
+                                            <th>Semester</th>
+                                            <th>Section</th>
+                                            <th>Missed Class</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var r in Model)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           class="rowchk"
+                                                           value="@r.Id"
+                                                           onchange="updateBulk()" />
+                                                </td>
+                                                <td style="color:#94a3b8;font-size:0.8rem;">
+                                                    @r.Id
+                                                </td>
+                                                <td>
+                                                    <strong style="color:#0f172a;">
+                                                        @r.StudentName
+                                                    </strong>
+                                                </td>
+                                                <td style="font-family:monospace;
+                                                    font-size:0.82rem;color:#3b82f6;">
+                                                    @r.LCID
+                                                </td>
+                                                <td>@r.Semester</td>
+                                                <td>@r.Section</td>
+                                                <td style="max-width:160px;overflow:hidden;
+                                                    text-overflow:ellipsis;white-space:nowrap;"
+                                                    title="@r.MissedClass">
+                                                    @r.MissedClass
+                                                </td>
+                                                <td style="color:#64748b;font-size:0.8rem;
+                                                    white-space:nowrap;">
+                                                    @r.SubmittedDate.ToString("dd MMM yyyy")
+                                                    <br />
+                                                    <span style="color:#94a3b8;">
+                                                        @r.SubmittedDate.ToString("hh:mm tt")
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @if (r.IsReviewed)
+                                                    {
+                                                        <span class="badge badge-ok">
+                                                            <i class="fas fa-check"></i>
+                                                            Reviewed
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-pnd">
+                                                            <i class="fas fa-clock"></i>
+                                                            Pending
+                                                        </span>
+                                                    }
+                                                </td>
+                                                <td style="white-space:nowrap;">
+                                                    <a href="/Attendance/ViewAbsence/@r.Id"
+                                                       class="act-btn act-view"
+                                                       title="View">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <form method="post"
+                                                          asp-action="DeleteAbsence"
+                                                          style="display:inline;"
+                                                          onsubmit="return confirm('Delete this record?')">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden"
+                                                               name="id"
+                                                               value="@r.Id" />
+                                                        <button type="submit"
+                                                                class="act-btn act-del"
+                                                                title="Delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (totPages > 1)
+                            {
+                                <div class="pager">
+                                    <a href="@(pgBase)&page=@(curPage - 1)"
+                                       class="@prevCls">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                    @for (int i = 1; i <= totPages; i++)
+                                    {
+                                        var cls = i == curPage
+                                            ? "pg-btn active" : "pg-btn";
+                                        <a href="@(pgBase)&page=@i"
+                                           class="@cls">@i</a>
+                                    }
+                                    <a href="@(pgBase)&page=@(curPage + 1)"
+                                       class="@nextCls">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty">
+                                <i class="fas fa-inbox"></i>
+                                <p>No absence records found.</p>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ✅ FIXED: Clear filters function
+        function clearFilters() {
+        window.location.href = '/Attendance/AttendanceDashboard';
+        }
+
+        const sectionData  = @Html.Raw(
+                            System.Text.Json.JsonSerializer.Serialize(bySection));
+        const semesterData = @Html.Raw(
+                            System.Text.Json.JsonSerializer.Serialize(bySemester));
+
+        const classData = {};
+        document.querySelectorAll('tbody tr').forEach(row => {
+        const cls = row.cells[6]?.textContent?.trim();
+        if (cls) classData[cls] = (classData[cls] || 0) + 1;
+        });
+
+        const colors = [
+        '#3b82f6','#8b5cf6','#10b981','#f59e0b',
+        '#ef4444','#ec4899','#06b6d4','#84cc16'
+        ];
+
+        let currentChart  = null;
+        let currentPeriod = 'section';
+
+        function buildChart(data) {
+        if (currentChart) currentChart.destroy();
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+
+        if (!labels.length) {
+        document.getElementById('chartView').innerHTML =
+        '<p style="text-align:center;color:#94a3b8;padding:40px;">No data available</p>';
+        return;
+        }
+
+        const box = document.querySelector('.chart-box');
+        if (box) box.innerHTML = '<canvas id="mainChart"></canvas>';
+
+        currentChart = new Chart(
+        document.getElementById('mainChart'), {
+        type: 'bar',
+        data: {
+        labels,
+        datasets: [{
+        label: 'Absences',
+        data: values,
+        backgroundColor: colors.slice(0, labels.length),
+        borderRadius: 8,
+        borderSkipped: false
+        }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+        legend: { display: false },
+        tooltip: {
+        callbacks: {
+        label: ctx =>
+        ` ${ctx.parsed.y} absence${ctx.parsed.y !== 1 ? 's' : ''}`
+        }
+        }
+        },
+        scales: {
+        y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1, precision: 0 },
+        grid: { color: '#f1f5f9' }
+        },
+        x: { grid: { display: false } }
+        }
+        }
+        });
+        }
+
+        function buildList(data, color) {
+        const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
+        if (!sorted.length) {
+        document.getElementById('listContent').innerHTML =
+        '<p style="text-align:center;color:#94a3b8;padding:20px;">No data</p>';
+        return;
+        }
+        document.getElementById('listContent').innerHTML =
+        sorted.map(([key, val]) => `
+        <div class="list-item">
+        <span style="font-weight:600;color:#0f172a;">${key}</span>
+        <span class="list-badge" style="background:${color}">
+        ${val} absence${val !== 1 ? 's' : ''}
+        </span>
+        </div>`).join('');
+        }
+
+        function getData(period) {
+        if (period === 'section')  return { data: sectionData,  color: '#3b82f6' };
+        if (period === 'semester') return { data: semesterData, color: '#8b5cf6' };
+        if (period === 'class')    return { data: classData,    color: '#10b981' };
+        return { data: sectionData, color: '#3b82f6' };
+        }
+
+        function switchPeriod(period, btn) {
+        currentPeriod = period;
+        document.querySelectorAll('.period-tab')
+        .forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const { data, color } = getData(period);
+        const isChart = document.getElementById('chartView').style.display !== 'none';
+        if (isChart) buildChart(data);
+        else         buildList(data, color);
+        }
+
+        function showView(view) {
+        const cv = document.getElementById('chartView');
+        const lv = document.getElementById('listView');
+        const bc = document.getElementById('btnChart');
+        const bl = document.getElementById('btnList');
+        const { data, color } = getData(currentPeriod);
+        if (view === 'chart') {
+        cv.style.display = 'block';
+        lv.style.display = 'none';
+        bc.classList.add('active');
+        bl.classList.remove('active');
+        buildChart(data);
+        } else {
+        cv.style.display = 'none';
+        lv.style.display = 'block';
+        bc.classList.remove('active');
+        bl.classList.add('active');
+        buildList(data, color);
+        }
+        }
+
+        window.addEventListener('load', () => buildChart(sectionData));
+
+        function toggleAll(src) {
+        document.querySelectorAll('.rowchk')
+        .forEach(c => c.checked = src.checked);
+        updateBulk();
+        }
+
+        function updateBulk() {
+        const n = document.querySelectorAll('.rowchk:checked').length;
+        document.getElementById('selCount').textContent = n;
+        document.getElementById('bulkBtn').disabled = n === 0;
+        const all    = document.querySelectorAll('.rowchk').length;
+        const chkAll = document.getElementById('chkAll');
+        chkAll.indeterminate = n > 0 && n < all;
+        chkAll.checked       = n > 0 && n === all;
+        }
+
+        function doBulkDelete() {
+        const ids = [...document.querySelectorAll('.rowchk:checked')]
+        .map(c => parseInt(c.value));
+        if (!ids.length) return;
+        if (!confirm(`Permanently delete ${ids.length} record(s)?`)) return;
+        fetch('/Attendance/BulkDelete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ids)
+        })
+        .then(r => r.json())
+        .then(d => { alert(`${d.deleted} record(s) deleted.`); location.reload(); })
+        .catch(() => alert('Delete failed. Please try again.'));
+        }
+    </script>
+</body>
+</html>

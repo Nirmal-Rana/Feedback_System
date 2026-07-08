@@ -5,16 +5,16 @@
     ViewData["Title"] = $"Submit {ViewBag.IssueType} Issue";
     var issueType = ViewBag.IssueType as string;
 
-    // Single consistent purple color for ALL issue types
-    var typeConfig = issueType switch {
-        "Internet"            => (Icon: "fa-wifi",               Color: "#667eea", Light: "#f0f0ff", Label: "Internet Issue"),
-        "IDCard"              => (Icon: "fa-id-card",            Color: "#667eea", Light: "#f0f0ff", Label: "ID Card Issue"),
-        "Internship"          => (Icon: "fa-briefcase",          Color: "#667eea", Light: "#f0f0ff", Label: "Internship Issue"),
-        "JobOpportunity"      => (Icon: "fa-building",           Color: "#667eea", Light: "#f0f0ff", Label: "Job Opportunity"),
-        "FacultyFeedback"     => (Icon: "fa-chalkboard-teacher", Color: "#667eea", Light: "#f0f0ff", Label: "Faculty Feedback"),
-        "Counselling"         => (Icon: "fa-hands-helping",      Color: "#667eea", Light: "#f0f0ff", Label: "Counselling"),
-        "ManagementAttention" => (Icon: "fa-bullhorn",           Color: "#667eea", Light: "#f0f0ff", Label: "Management Attention"),
-        _                     => (Icon: "fa-file-alt",           Color: "#667eea", Light: "#f0f0ff", Label: "General Issue")
+    var typeConfig = issueType switch
+    {
+        "Internet" => (Icon: "fa-wifi", Color: "#667eea", Light: "#f0f0ff", Label: "Internet Issue"),
+        "IDCard" => (Icon: "fa-id-card", Color: "#667eea", Light: "#f0f0ff", Label: "ID Card Issue"),
+        "Internship" => (Icon: "fa-briefcase", Color: "#667eea", Light: "#f0f0ff", Label: "Internship Apply"),
+        "JobOpportunity" => (Icon: "fa-building", Color: "#667eea", Light: "#f0f0ff", Label: "Job Opportunity"),
+        "FacultyFeedback" => (Icon: "fa-chalkboard-teacher", Color: "#667eea", Light: "#f0f0ff", Label: "Faculty Feedback"),
+        "Counselling" => (Icon: "fa-hands-helping", Color: "#667eea", Light: "#f0f0ff", Label: "Counselling"),
+        "ManagementAttention" => (Icon: "fa-bullhorn", Color: "#667eea", Light: "#f0f0ff", Label: "Management Attention"),
+        _ => (Icon: "fa-file-alt", Color: "#667eea", Light: "#f0f0ff", Label: "General Issue")
     };
 }
 
@@ -27,521 +27,574 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-
     <style>
-        :root {
-            --accent:       @typeConfig.Color;
-            --accent-light: @typeConfig.Light;
-            --text-dark:    #0f172a;
-            --text-muted:   #64748b;
-            --border:       #e2e8f0;
-            --bg:           #f1f5f9;
-            --white:        #ffffff;
-            --radius:       14px;
-            --radius-sm:    9px;
-        }
+            :root {
+                --accent: @typeConfig.Color;
+                --accent-light: @typeConfig.Light;
+                --text-dark: #0f172a;
+                --text-muted: #64748b;
+                --border: #e2e8f0;
+                --bg: #f1f5f9;
+                --white: #ffffff;
+                --radius: 14px;
+                --radius-sm: 9px;
+            }
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+            *, *::before, *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
 
-        html, body {
-            height: 100%;
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text-dark);
-        }
+            html, body {
+                min-height: 100%;
+                font-family: 'DM Sans', sans-serif;
+                background: var(--bg);
+                color: var(--text-dark);
+            }
 
-        .page-shell {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            min-height: 100vh;
-        }
+            .top-nav {
+                background: var(--accent);
+                padding: 0 32px;
+                height: 58px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                box-shadow: 0 2px 12px rgba(102,126,234,0.25);
+            }
 
-        .sidebar {
-            background: var(--accent);
-            padding: 44px 32px;
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow: hidden;
-        }
+            .top-nav-left {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                color: white;
+            }
 
-        .sidebar::before,
-        .sidebar::after {
-            content: '';
-            position: absolute;
-            border-radius: 50%;
-            pointer-events: none;
-        }
+                .top-nav-left .nav-icon {
+                    width: 34px;
+                    height: 34px;
+                    background: rgba(255,255,255,0.18);
+                    border-radius: 9px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.9rem;
+                }
 
-        .sidebar::before {
-            width: 260px; height: 260px;
-            background: rgba(255,255,255,0.07);
-            top: -80px; right: -80px;
-        }
+                .top-nav-left .nav-title {
+                    font-weight: 700;
+                    font-size: 0.95rem;
+                }
 
-        .sidebar::after {
-            width: 180px; height: 180px;
-            background: rgba(0,0,0,0.08);
-            bottom: -60px; left: -60px;
-        }
+                .top-nav-left .nav-subtitle {
+                    font-size: 0.75rem;
+                    opacity: 0.7;
+                }
 
-        .sidebar-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: rgba(255,255,255,0.65);
-            text-decoration: none;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 40px;
-            z-index: 1;
-            position: relative;
-            width: fit-content;
-            transition: color 0.2s;
-        }
-        .sidebar-back:hover { color: white; text-decoration: none; }
+            .top-nav-back {
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                color: rgba(255,255,255,0.85);
+                text-decoration: none;
+                font-size: 0.84rem;
+                font-weight: 600;
+                padding: 7px 14px;
+                background: rgba(255,255,255,0.14);
+                border: 1px solid rgba(255,255,255,0.25);
+                border-radius: 8px;
+                transition: all 0.2s;
+            }
 
-        .sidebar-icon-box {
-            width: 68px; height: 68px;
-            background: rgba(255,255,255,0.14);
-            border: 1px solid rgba(255,255,255,0.22);
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.7rem;
-            color: white;
-            margin-bottom: 22px;
-            position: relative;
-            z-index: 1;
-            backdrop-filter: blur(6px);
-        }
+                .top-nav-back:hover {
+                    background: rgba(255,255,255,0.24);
+                    color: white;
+                    text-decoration: none;
+                }
 
-        .sidebar-title {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.65rem;
-            color: white;
-            line-height: 1.25;
-            margin-bottom: 12px;
-            position: relative;
-            z-index: 1;
-        }
+            .progress-bar-wrap {
+                background: white;
+                border-bottom: 1px solid var(--border);
+                padding: 12px 32px;
+            }
 
-        .sidebar-desc {
-            font-size: 0.83rem;
-            color: rgba(255,255,255,0.68);
-            line-height: 1.65;
-            position: relative;
-            z-index: 1;
-        }
+            .progress-steps {
+                display: flex;
+                align-items: center;
+                max-width: 600px;
+                margin: 0 auto;
+            }
 
-        .steps-wrapper {
-            margin-top: auto;
-            padding-top: 32px;
-            position: relative;
-            z-index: 1;
-        }
+            .p-step {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex: 1;
+            }
 
-        .steps-label {
-            font-size: 0.68rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: rgba(255,255,255,0.45);
-            margin-bottom: 20px;
-        }
+                .p-step:last-child {
+                    flex: none;
+                }
 
-        .step-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            position: relative;
-            padding-bottom: 26px;
-        }
-        .step-row:last-child { padding-bottom: 0; }
+            .p-dot {
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                border: 2px solid #e2e8f0;
+                background: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.68rem;
+                font-weight: 700;
+                color: #aaa;
+                flex-shrink: 0;
+                transition: all 0.3s;
+            }
 
-        .step-row:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            left: 13px; top: 28px;
-            width: 2px;
-            height: calc(100% - 14px);
-            background: rgba(255,255,255,0.18);
-        }
+                .p-dot.is-active {
+                    background: var(--accent);
+                    border-color: var(--accent);
+                    color: white;
+                    box-shadow: 0 0 0 4px rgba(102,126,234,0.15);
+                }
 
-        .step-circle {
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.08);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: rgba(255,255,255,0.55);
-            flex-shrink: 0;
-            transition: all 0.3s ease;
-        }
+                .p-dot.is-done {
+                    background: #22c55e;
+                    border-color: #22c55e;
+                    color: white;
+                }
 
-        .step-circle.is-active {
-            background: white;
-            border-color: white;
-            color: var(--accent);
-            box-shadow: 0 0 0 5px rgba(255,255,255,0.18);
-        }
+            .p-label {
+                font-size: 0.74rem;
+                font-weight: 600;
+                color: #aaa;
+                white-space: nowrap;
+                transition: color 0.3s;
+            }
 
-        .step-circle.is-done {
-            background: rgba(255,255,255,0.88);
-            border-color: white;
-            color: var(--accent);
-        }
+                .p-label.is-active {
+                    color: var(--accent);
+                }
 
-        .step-info { padding-top: 3px; }
-        .step-info strong {
-            display: block;
-            font-size: 0.84rem;
-            font-weight: 700;
-            color: rgba(255,255,255,0.92);
-            margin-bottom: 2px;
-        }
-        .step-info span {
-            font-size: 0.74rem;
-            color: rgba(255,255,255,0.5);
-        }
+                .p-label.is-done {
+                    color: #22c55e;
+                }
 
-        .form-area { padding: 44px 52px 64px; overflow-y: auto; }
+            .p-line {
+                flex: 1;
+                height: 2px;
+                background: #e2e8f0;
+                margin: 0 10px;
+                border-radius: 2px;
+                transition: background 0.3s;
+            }
 
-        .form-topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
+                .p-line.is-done {
+                    background: #22c55e;
+                }
 
-        .form-topbar h1 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.6rem;
-            color: var(--text-dark);
-            line-height: 1.2;
-        }
-        .form-topbar h1 em { font-style: normal; color: var(--accent); }
+            .form-area {
+                max-width: 820px;
+                margin: 0 auto;
+                padding: 32px 24px 64px;
+            }
 
-        .required-pill {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            background: var(--white);
-            border: 1px solid var(--border);
-            padding: 5px 12px;
-            border-radius: 20px;
-            white-space: nowrap;
-        }
+            .form-topbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 24px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
 
-        .error-box {
-            background: #fff5f5;
-            border: 1px solid #fecaca;
-            border-left: 4px solid #ef4444;
-            border-radius: var(--radius-sm);
-            padding: 13px 16px;
-            margin-bottom: 24px;
-            font-size: 0.86rem;
-            color: #b91c1c;
-        }
+                .form-topbar h1 {
+                    font-family: 'DM Serif Display', serif;
+                    font-size: 1.55rem;
+                    color: var(--text-dark);
+                    line-height: 1.2;
+                }
 
-        .form-section {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 26px 28px;
-            margin-bottom: 18px;
-        }
+                    .form-topbar h1 em {
+                        font-style: normal;
+                        color: var(--accent);
+                    }
 
-        .section-head {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 22px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #f1f5f9;
-        }
+            .required-pill {
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--text-muted);
+                background: var(--white);
+                border: 1px solid var(--border);
+                padding: 5px 12px;
+                border-radius: 20px;
+                white-space: nowrap;
+            }
 
-        .section-head-icon {
-            width: 36px; height: 36px;
-            background: var(--accent-light);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.88rem;
-            color: var(--accent);
-            flex-shrink: 0;
-        }
+            .error-box {
+                background: #fff5f5;
+                border: 1px solid #fecaca;
+                border-left: 4px solid #ef4444;
+                border-radius: var(--radius-sm);
+                padding: 13px 16px;
+                margin-bottom: 24px;
+                font-size: 0.86rem;
+                color: #b91c1c;
+            }
 
-        .section-head-text h2 {
-            font-size: 0.82rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--text-dark);
-        }
+            .form-section {
+                background: var(--white);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 26px 28px;
+                margin-bottom: 16px;
+            }
 
-        .section-head-text p {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
+            .section-head {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 22px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #f1f5f9;
+            }
 
-        .fields-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
+            .section-head-icon {
+                width: 36px;
+                height: 36px;
+                background: var(--accent-light);
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.88rem;
+                color: var(--accent);
+                flex-shrink: 0;
+            }
 
-        .f-full { grid-column: 1 / -1; }
+            .section-head-text h2 {
+                font-size: 0.82rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                color: var(--text-dark);
+            }
 
-        .field { display: flex; flex-direction: column; gap: 6px; }
+            .section-head-text p {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                margin-top: 2px;
+            }
 
-        .field label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-        }
-        .field label .req { color: #ef4444; margin-left: 2px; }
+            .fields-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
 
-        .input-box { position: relative; }
+            .f-full {
+                grid-column: 1 / -1;
+            }
 
-        .input-box .ico {
-            position: absolute;
-            left: 12px; top: 50%;
-            transform: translateY(-50%);
-            color: #cbd5e1;
-            font-size: 0.82rem;
-            pointer-events: none;
-            transition: color 0.2s;
-        }
-        .input-box:focus-within .ico { color: var(--accent); }
+            .field {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
 
-        .input-box input,
-        .input-box select,
-        .input-box textarea {
-            width: 100%;
-            padding: 10px 12px 10px 36px;
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            border-radius: var(--radius-sm);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.9rem;
-            color: var(--text-dark);
-            outline: none;
-            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-            -webkit-appearance: none;
-            appearance: none;
-        }
+                .field label {
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    color: var(--text-muted);
+                }
 
-        .input-box input::placeholder,
-        .input-box textarea::placeholder { color: #94a3b8; }
+                    .field label .req {
+                        color: #ef4444;
+                        margin-left: 2px;
+                    }
 
-        .input-box input:focus,
-        .input-box select:focus,
-        .input-box textarea:focus {
-            border-color: var(--accent);
-            background: white;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-        }
+            .input-box {
+                position: relative;
+            }
 
-        .input-box.no-ico input,
-        .input-box.no-ico select,
-        .input-box.no-ico textarea { padding-left: 12px; }
+                .input-box .ico {
+                    position: absolute;
+                    left: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #cbd5e1;
+                    font-size: 0.82rem;
+                    pointer-events: none;
+                    transition: color 0.2s;
+                }
 
-        .input-box.sel-box::after {
-            content: '\f107';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            right: 12px; top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            pointer-events: none;
-            font-size: 0.78rem;
-        }
+                .input-box:focus-within .ico {
+                    color: var(--accent);
+                }
 
-        .input-box textarea { resize: vertical; min-height: 92px; line-height: 1.55; }
+                .input-box input,
+                .input-box select,
+                .input-box textarea {
+                    width: 100%;
+                    padding: 10px 12px 10px 36px;
+                    background: #f8fafc;
+                    border: 1.5px solid #e2e8f0;
+                    border-radius: var(--radius-sm);
+                    font-family: 'DM Sans', sans-serif;
+                    font-size: 0.9rem;
+                    color: var(--text-dark);
+                    outline: none;
+                    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+                    appearance: none;
+                    -webkit-appearance: none;
+                }
 
-        .field-error {
-            font-size: 0.74rem;
-            color: #ef4444;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+                    .input-box input::placeholder,
+                    .input-box textarea::placeholder {
+                        color: #94a3b8;
+                    }
 
-        /* Custom checkbox */
-        .checkbox-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            font-size: 0.88rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            user-select: none;
-            padding: 10px 14px;
-            background: #f8fafc;
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            transition: all 0.2s;
-        }
-        .checkbox-label:hover {
-            border-color: var(--accent);
-            background: var(--accent-light);
-        }
-        .checkbox-label input.custom-check { display: none; }
-        .check-box {
-            width: 18px; height: 18px;
-            border: 2px solid #cbd5e1;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: all 0.2s;
-            background: white;
-        }
-        .checkbox-label:has(input:checked) .check-box {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
-        .checkbox-label:has(input:checked) .check-box::after {
-            content: '✓';
-            color: white;
-            font-size: 0.72rem;
-            font-weight: 800;
-        }
-        .checkbox-label:has(input:checked) {
-            border-color: var(--accent);
-            background: var(--accent-light);
-        }
+                    .input-box input:focus,
+                    .input-box select:focus,
+                    .input-box textarea:focus {
+                        border-color: var(--accent);
+                        background: white;
+                        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+                    }
 
-        .submit-bar {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 22px 28px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-        }
+                .input-box.no-ico input,
+                .input-box.no-ico select,
+                .input-box.no-ico textarea {
+                    padding-left: 12px;
+                }
 
-        .submit-note { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; }
-        .submit-note strong { color: var(--text-dark); font-weight: 700; }
+                .input-box.sel-box::after {
+                    content: '\f107';
+                    font-family: 'Font Awesome 6 Free';
+                    font-weight: 900;
+                    position: absolute;
+                    right: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #94a3b8;
+                    pointer-events: none;
+                    font-size: 0.78rem;
+                }
 
-        .btn-submit {
-            display: inline-flex;
-            align-items: center;
-            gap: 9px;
-            padding: 12px 28px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.92rem;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            flex-shrink: 0;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 14px rgba(102,126,234,0.3);
-        }
-        .btn-submit:hover {
-            filter: brightness(1.08);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 22px rgba(102,126,234,0.38);
-        }
-        .btn-submit:active { transform: translateY(0); }
+                .input-box textarea {
+                    resize: vertical;
+                    min-height: 92px;
+                    line-height: 1.55;
+                }
 
-        @@media (max-width: 860px) {
-            .page-shell { grid-template-columns: 1fr; }
-            .sidebar { position: static; height: auto; padding: 28px 24px 32px; }
-            .steps-wrapper { display: none; }
-            .form-area { padding: 24px 18px 48px; }
-            .fields-grid { grid-template-columns: 1fr; }
-            .submit-bar { flex-direction: column; align-items: stretch; }
-            .btn-submit { justify-content: center; }
-        }
+            .field-error {
+                font-size: 0.74rem;
+                color: #ef4444;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .checkbox-label {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                cursor: pointer;
+                font-size: 0.88rem;
+                font-weight: 600;
+                color: var(--text-dark);
+                user-select: none;
+                padding: 10px 14px;
+                background: #f8fafc;
+                border: 1.5px solid var(--border);
+                border-radius: 10px;
+                transition: all 0.2s;
+            }
+
+                .checkbox-label:hover {
+                    border-color: var(--accent);
+                    background: var(--accent-light);
+                }
+
+                .checkbox-label input.custom-check {
+                    display: none;
+                }
+
+            .check-box {
+                width: 18px;
+                height: 18px;
+                border: 2px solid #cbd5e1;
+                border-radius: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                transition: all 0.2s;
+                background: white;
+            }
+
+            .checkbox-label:has(input:checked) .check-box {
+                background: var(--accent);
+                border-color: var(--accent);
+            }
+
+                .checkbox-label:has(input:checked) .check-box::after {
+                    content: '✓';
+                    color: white;
+                    font-size: 0.72rem;
+                    font-weight: 800;
+                }
+
+            .checkbox-label:has(input:checked) {
+                border-color: var(--accent);
+                background: var(--accent-light);
+            }
+
+            .submit-bar {
+                background: var(--white);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 22px 28px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 20px;
+            }
+
+            .submit-note {
+                font-size: 0.82rem;
+                color: var(--text-muted);
+                line-height: 1.55;
+            }
+
+                .submit-note strong {
+                    color: var(--text-dark);
+                    font-weight: 700;
+                }
+
+            .btn-submit {
+                display: inline-flex;
+                align-items: center;
+                gap: 9px;
+                padding: 12px 28px;
+                background: var(--accent);
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-family: 'DM Sans', sans-serif;
+                font-size: 0.92rem;
+                font-weight: 700;
+                cursor: pointer;
+                white-space: nowrap;
+                flex-shrink: 0;
+                transition: all 0.25s ease;
+                box-shadow: 0 4px 14px rgba(102,126,234,0.3);
+            }
+
+                .btn-submit:hover {
+                    filter: brightness(1.08);
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 22px rgba(102,126,234,0.38);
+                }
+
+                .btn-submit:active {
+                    transform: translateY(0);
+                }
+
+                .btn-submit:disabled {
+                    opacity: 0.7;
+                    cursor: not-allowed;
+                    transform: none;
+                    filter: none;
+                }
+
+            @@media (max-width: 640px) {
+                .top-nav {
+                    padding: 0 16px;
+                }
+
+                .form-area {
+                    padding: 20px 16px 48px;
+                }
+
+                .fields-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .submit-bar {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .btn-submit {
+                    justify-content: center;
+                }
+
+                .progress-bar-wrap {
+                    padding: 10px 16px;
+                }
+
+                .p-label {
+                    display: none;
+                }
+            }
     </style>
 </head>
 <body>
 
-<div class="page-shell">
-
-    @* ── SIDEBAR ── *@
-    <aside class="sidebar">
-        <a href="/" class="sidebar-back">
+    <nav class="top-nav">
+        <div class="top-nav-left">
+            <div class="nav-icon">
+                <i class="fas @typeConfig.Icon"></i>
+            </div>
+            <div>
+                <div class="nav-title">@typeConfig.Label</div>
+                <div class="nav-subtitle">Texas College of Management & IT</div>
+            </div>
+        </div>
+        <a href="/" class="top-nav-back">
             <i class="fas fa-arrow-left"></i> Back to Home
         </a>
-        <div class="sidebar-icon-box">
-            <i class="fas @typeConfig.Icon"></i>
-        </div>
-        <h2 class="sidebar-title">Submit<br />@typeConfig.Label</h2>
-        <p class="sidebar-desc">
-            Fill in the form carefully. Your submission will be reviewed
-            by the college admin and you'll receive an email update.
-        </p>
-        <div class="steps-wrapper">
-            <p class="steps-label">How it works</p>
-            <div class="step-row">
-                <div class="step-circle is-active" id="dot1">1</div>
-                <div class="step-info">
-                    <strong>Personal Info</strong>
-                    <span>Name, email &amp; roll no.</span>
-                </div>
-            </div>
-            <div class="step-row">
-                <div class="step-circle" id="dot2">2</div>
-                <div class="step-info">
-                    <strong>Issue Details</strong>
-                    <span>Describe your issue</span>
-                </div>
-            </div>
-            <div class="step-row">
-                <div class="step-circle" id="dot3">3</div>
-                <div class="step-info">
-                    <strong>Submit &amp; Track</strong>
-                    <span>Get your reference ID</span>
-                </div>
-            </div>
-        </div>
-    </aside>
+    </nav>
 
-    @* ── FORM AREA ── *@
+    <div class="progress-bar-wrap">
+        <div class="progress-steps">
+            <div class="p-dot is-active" id="dot1">1</div>
+            <span class="p-label is-active" id="lbl1">Personal Info</span>
+            <div class="p-line" id="line1"></div>
+            <div class="p-dot" id="dot2">2</div>
+            <span class="p-label" id="lbl2">Issue Details</span>
+            <div class="p-line" id="line2"></div>
+            <div class="p-dot" id="dot3">3</div>
+            <span class="p-label" id="lbl3">Submit</span>
+        </div>
+    </div>
+
     <div class="form-area">
         <div class="form-topbar">
             <h1>New <em>@typeConfig.Label</em></h1>
             <span class="required-pill">
-                <i class="fas fa-asterisk" style="font-size:0.55rem; margin-right:4px;"></i>
+                <i class="fas fa-asterisk" style="font-size:0.55rem;margin-right:4px;"></i>
                 Required fields
             </span>
         </div>
 
-        @if (ViewData.ModelState.ErrorCount > 0)
+        @if (!ViewData.ModelState.IsValid)
         {
             <div class="error-box">
                 <i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>
-                <div asp-validation-summary="ModelOnly"></div>
+                <div asp-validation-summary="All"></div>
             </div>
         }
 
-        <form asp-action="CreateIssue" method="post"
-              enctype="multipart/form-data" id="issueForm" novalidate>
+        <form asp-action="CreateIssue" method="post" enctype="multipart/form-data" id="issueForm" novalidate>
+            <input type="hidden" name="issueType" value="@issueType" />
 
             @* Section 1 — Personal Info *@
             <div class="form-section" id="section1">
@@ -562,10 +615,10 @@
                         <span asp-validation-for="StudentName" class="field-error"></span>
                     </div>
                     <div class="field">
-                        <label asp-for="StudentRollNo">Roll Number <span class="req">*</span></label>
+                        <label asp-for="StudentRollNo">LCID <span class="req">*</span></label>
                         <div class="input-box">
                             <i class="fas fa-hashtag ico"></i>
-                            <input asp-for="StudentRollNo" placeholder="e.g. 2021-BIT-045" required />
+                            <input asp-for="StudentRollNo" placeholder="e.g. LC001700...." required />
                         </div>
                         <span asp-validation-for="StudentRollNo" class="field-error"></span>
                     </div>
@@ -573,8 +626,7 @@
                         <label asp-for="StudentEmail">Email Address <span class="req">*</span></label>
                         <div class="input-box">
                             <i class="fas fa-envelope ico"></i>
-                            <input asp-for="StudentEmail" type="email"
-                                   placeholder="you@college.edu.np" required />
+                            <input asp-for="StudentEmail" type="email" placeholder="you@college.edu.np" required />
                         </div>
                         <span asp-validation-for="StudentEmail" class="field-error"></span>
                     </div>
@@ -582,21 +634,20 @@
                         <label asp-for="StudentPhone">Phone Number <span class="req">*</span></label>
                         <div class="input-box">
                             <i class="fas fa-phone ico"></i>
-                            <input asp-for="StudentPhone" type="tel"
-                                   placeholder="98XXXXXXXX" required />
+                            <input asp-for="StudentPhone" type="tel" placeholder="98XXXXXXXX" required />
                         </div>
                         <span asp-validation-for="StudentPhone" class="field-error"></span>
                     </div>
                     <div class="field f-full">
                         <label asp-for="StudentDepartment">Department <span class="req">*</span></label>
                         <div class="input-box no-ico sel-box">
-                            <select asp-for="StudentDepartment" required>
+                            <select asp-for="StudentDepartment" id="deptSelect" required>
                                 <option value="">Select your department</option>
-                                <option>BIT — Bachelor of Information Technology</option>
-                                <option>BCA — Bachelor of Computer Applications</option>
-                                <option>BBS — Bachelor of Business Studies</option>
-                                <option>BBA — Bachelor of Business Administration</option>
-                                <option>Other</option>
+                                <option value="BIT — Bachelor of Information Technology">BIT — Bachelor of Information Technology</option>
+                                <option value="BCA — Bachelor of Computer Applications">BCA — Bachelor of Computer Applications</option>
+                                <option value="BBS — Bachelor of Business Studies">BBS — Bachelor of Business Studies</option>
+                                <option value="BBA — Bachelor of Business Administration">BBA — Bachelor of Business Administration</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
                         <span asp-validation-for="StudentDepartment" class="field-error"></span>
@@ -604,139 +655,118 @@
                 </div>
             </div>
 
-            @* Section 2 — Issue Details *@
+            @* Section 2 — Dynamic Contextual Details Section *@
             <div class="form-section" id="section2">
                 <div class="section-head">
-                    <div class="section-head-icon">
-                        <i class="fas @typeConfig.Icon"></i>
-                    </div>
+                    <div class="section-head-icon"><i class="fas @typeConfig.Icon"></i></div>
                     <div class="section-head-text">
-                        <h2>Issue Details</h2>
+                        <h2> Details</h2>
                         <p>Specific information about your @issueType issue</p>
                     </div>
                 </div>
 
-                @if (issueType == "Internet")
+                @if (issueType == "Internship")
                 {
-                    @await Html.PartialAsync("~/Views/Home/IssueForms/_InternetForm.cshtml",
-                        Model as InternetIssueViewModel)
-                }
-                else if (issueType == "IDCard")
-                {
-                    @await Html.PartialAsync("~/Views/Home/IssueForms/_IDCardForm.cshtml",
-                        Model as IDCardIssueViewModel)
-                }
-                else if (issueType == "Internship")
-                {
-                    @await Html.PartialAsync("~/Views/Home/IssueForms/_InternshipForm.cshtml",
-                        Model as InternshipIssueViewModel)
-                }
-                else if (issueType == "JobOpportunity")
-                {
-                    @await Html.PartialAsync("~/Views/Home/IssueForms/_JobOpportunityForm.cshtml",
-                        Model as JobOpportunityViewModel)
-                }
-                else if (issueType == "FacultyFeedback")
-                {
-                    @await Html.PartialAsync("~/Views/Home/IssueForms/_FacultyFeedbackForm.cshtml",
-                        Model as FacultyFeedbackViewModel)
-                }
-                else if (issueType == "Counselling")
-                {
-                    @await Html.PartialAsync("~/Views/Home/IssueForms/_CounsellingForm.cshtml",
-                        Model as CounsellingViewModel)
-                }
-                else if (issueType == "ManagementAttention")
-                {
-                    @await Html.PartialAsync("~/Views/Home/IssueForms/_ManagementAttentionForm.cshtml",
-                        Model as ManagementAttentionViewModel)
+                    @await Html.PartialAsync("~/Views/Home/IssueForms/_InternshipForm.cshtml", Model as InternshipIssueViewModel)
                 }
                 else
                 {
                     <div class="field f-full">
-                        <label asp-for="Description">
-                            Issue Description <span class="req">*</span>
-                        </label>
+                        <label asp-for="Description">Issue Description <span class="req">*</span></label>
                         <div class="input-box no-ico">
-                            <textarea asp-for="Description" rows="5"
-                                      placeholder="Describe your issue clearly..."
-                                      required></textarea>
+                            <textarea asp-for="Description" rows="5" placeholder="Describe your issue clearly..." required></textarea>
                         </div>
                         <span asp-validation-for="Description" class="field-error"></span>
                     </div>
-                    <input type="hidden" asp-for="Type" />
+                    <input type="hidden" asp-for="Type" value="@issueType" />
                 }
             </div>
 
-            @* Submit bar *@
+            @* Form Submission Bar *@
             <div class="submit-bar">
-                <p class="submit-note">
-                    <strong>Ready to submit?</strong><br />
-                    You'll receive a reference ID and email updates on your issue status.
-                </p>
+                
                 <button type="submit" class="btn-submit" id="submitBtn">
                     <i class="fas fa-paper-plane"></i>
-                    <span id="submitTxt">Submit Issue</span>
+                    <span id="submitTxt">Submit</span>
                     <i class="fas fa-spinner fa-spin" id="submitSpin" style="display:none;"></i>
                 </button>
             </div>
-
         </form>
     </div>
-</div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
 
-<script>
-    const dot1 = document.getElementById('dot1');
-    const dot2 = document.getElementById('dot2');
-    const dot3 = document.getElementById('dot3');
+    <script>
+        const dot1 = document.getElementById('dot1');
+        const dot2 = document.getElementById('dot2');
+        const dot3 = document.getElementById('dot3');
+        const lbl1 = document.getElementById('lbl1');
+        const lbl2 = document.getElementById('lbl2');
+        const lbl3 = document.getElementById('lbl3');
+        const line1 = document.getElementById('line1');
+        const line2 = document.getElementById('line2');
 
-    function markDone(dot) {
+        function markDone(dot, lbl, line) {
         dot.classList.remove('is-active');
         dot.classList.add('is-done');
-        dot.innerHTML = '<i class="fas fa-check" style="font-size:0.62rem;"></i>';
-    }
+        dot.innerHTML = '<i class="fas fa-check" style="font-size:0.58rem;"></i>';
+        if (lbl) { lbl.classList.remove('is-active'); lbl.classList.add('is-done'); }
+        if (line) { line.classList.add('is-done'); }
+        }
 
-    const sec2 = document.getElementById('section2');
-    if (sec2) {
+        function setActive(dot, lbl) {
+        dot.classList.add('is-active');
+        if (lbl) lbl.classList.add('is-active');
+        }
+
+        const sec2 = document.getElementById('section2');
+        if (sec2) {
         new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting) {
-                markDone(dot1);
-                dot2.classList.add('is-active');
-            }
-        }, { threshold: 0.2 }).observe(sec2);
-    }
+        if (entries[0].isIntersecting) {
+        markDone(dot1, lbl1, line1);
+        setActive(dot2, lbl2);
+        }
+        }, { threshold: 0.1 }).observe(sec2);
+        }
 
-    document.getElementById('issueForm').addEventListener('submit', function () {
-        markDone(dot2);
-        dot3.classList.add('is-active');
-        const btn  = document.getElementById('submitBtn');
-        const txt  = document.getElementById('submitTxt');
+        document.getElementById('issueForm').addEventListener('submit', function (e) {
+        if (!$(this).valid()) {
+        e.preventDefault();
+        return;
+        }
+
+        markDone(dot2, lbl2, line2);
+        setActive(dot3, lbl3);
+
+        const btn = document.getElementById('submitBtn');
+        const txt = document.getElementById('submitTxt');
         const spin = document.getElementById('submitSpin');
-        btn.disabled       = true;
-        txt.textContent    = 'Submitting…';
-        spin.style.display = 'inline-block';
-    });
 
-    const fields = document.querySelectorAll('input:not([type=hidden]), select, textarea');
-    function save() {
+        btn.disabled = true;
+        txt.textContent = 'Submitting…';
+        spin.style.display = 'inline-block';
+        });
+
+        // Safe Session Restore (Skips file parameters safely)
+        const fields = document.querySelectorAll('input:not([type=hidden]):not([type=file]), select, textarea');
+
+        function save() {
         const d = {};
         fields.forEach(f => { if (f.name) d[f.name] = f.value; });
         sessionStorage.setItem('iform_@issueType', JSON.stringify(d));
-    }
-    function restore() {
+        }
+
+        function restore() {
         const raw = sessionStorage.getItem('iform_@issueType');
         if (!raw) return;
         const d = JSON.parse(raw);
-        fields.forEach(f => { if (f.name && d[f.name]) f.value = d[f.name]; });
-    }
-    fields.forEach(f => f.addEventListener('input', save));
-    document.getElementById('issueForm').addEventListener('submit',
-        () => sessionStorage.removeItem('iform_@issueType'));
-    restore();
-</script>
+        fields.forEach(f => { if (f.name && d[f.name] !== undefined) f.value = d[f.name]; });
+        }
+
+        fields.forEach(f => f.addEventListener('input', save));
+        restore();
+    </script>
 </body>
 </html>

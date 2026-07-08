@@ -7,43 +7,16 @@
         <div class="input-box no-ico sel-box">
             <select asp-for="IDCardIssue" required>
                 <option value="">Select issue type</option>
-                <option>Lost ID Card</option>
-                <option>Damaged ID Card</option>
-                <option>New ID Card Request</option>
-                <option>ID Card Not Working</option>
-                <option>Wrong Information on Card</option>
+                <option value="Lost ID Card">Lost ID Card</option>
+                <option value="Damaged ID Card">Damaged ID Card</option>
+                <option value="New ID Card Request">New ID Card Request</option>
+                <option value="ID Card Not Working">ID Card Not Working</option>
+                <option value="Wrong Information on Card">
+                    Wrong Information on Card
+                </option>
             </select>
         </div>
         <span asp-validation-for="IDCardIssue" class="field-error"></span>
-    </div>
-
-    <div class="field">
-        <label>Existing ID Card Number (if any)</label>
-        <div class="input-box">
-            <i class="fas fa-id-card ico"></i>
-            <input asp-for="IDCardNumber"
-                   placeholder="e.g. 2021-BIT-001" />
-        </div>
-        <span asp-validation-for="IDCardNumber" class="field-error"></span>
-    </div>
-
-    <div class="field">
-        <label>Date of Loss / Damage</label>
-        <div class="input-box">
-            <i class="fas fa-calendar-alt ico"></i>
-            <input asp-for="IncidentDate" type="date" />
-        </div>
-        <span asp-validation-for="IncidentDate" class="field-error"></span>
-    </div>
-
-    <div class="field f-full">
-        <label>Alternative Identification (Driving License, Citizenship, etc.)</label>
-        <div class="input-box">
-            <i class="fas fa-passport ico"></i>
-            <input asp-for="AlternativeID"
-                   placeholder="e.g. Citizenship No: 12-345-67" />
-        </div>
-        <span asp-validation-for="AlternativeID" class="field-error"></span>
     </div>
 
     <div class="field f-full">
@@ -58,10 +31,4 @@
 
 </div>
 
-@* Hidden base fields *@
 <input type="hidden" asp-for="Type" />
-<input type="hidden" asp-for="StudentName" />
-<input type="hidden" asp-for="StudentEmail" />
-<input type="hidden" asp-for="StudentRollNo" />
-<input type="hidden" asp-for="StudentDepartment" />
-<input type="hidden" asp-for="StudentPhone" />

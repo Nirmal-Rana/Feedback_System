@@ -40,13 +40,15 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
-// Session
+// ✅ FIX — Increased session timeout + unique cookie name
+// to avoid conflict with Identity cookie
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.IdleTimeout = TimeSpan.FromHours(4);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.Name = ".AttendanceAdmin.Session"; // ✅ unique name
 });
 
 // SignalR
@@ -71,6 +73,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+// ✅ FIX — Correct middleware order
+// Session MUST come before Authentication
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -80,6 +85,7 @@ app.MapHub<NotificationHub>("/notificationHub");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapRazorPages();
 
 using (var scope = app.Services.CreateScope())

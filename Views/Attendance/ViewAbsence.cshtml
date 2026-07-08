@@ -1,0 +1,219 @@
+﻿@model CollegeIssueManagement.Models.AbsenceRecord
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Absence Detail</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+            *, *::before, *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                background: #f1f5f9;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+
+            .card {
+                background: white;
+                border-radius: 20px;
+                max-width: 540px;
+                width: 100%;
+                box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+                overflow: hidden;
+            }
+
+            .card-header {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                padding: 26px 28px;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+                .card-header h1 {
+                    font-size: 1.1rem;
+                }
+
+                .card-header .id-badge {
+                    background: rgba(255,255,255,0.2);
+                    padding: 5px 14px;
+                    border-radius: 20px;
+                    font-size: 0.88rem;
+                    font-weight: 700;
+                }
+
+            .card-body {
+                padding: 26px 28px;
+            }
+
+            .row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+                margin-bottom: 14px;
+            }
+
+            .item {
+                background: #f8fafc;
+                border-radius: 10px;
+                padding: 13px 15px;
+            }
+
+                .item.full {
+                    grid-column: 1 / -1;
+                }
+
+                .item .lbl {
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    color: #888;
+                    margin-bottom: 5px;
+                }
+
+                .item .val {
+                    font-size: 0.92rem;
+                    font-weight: 600;
+                    color: #1a1a2e;
+                    line-height: 1.5;
+                }
+
+            .reviewed-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: 700;
+                background: #dcfce7;
+                color: #16a34a;
+            }
+
+            .actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 20px;
+            }
+
+            .btn {
+                flex: 1;
+                padding: 12px;
+                border-radius: 11px;
+                font-size: 0.9rem;
+                font-weight: 700;
+                text-align: center;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                cursor: pointer;
+                border: none;
+                transition: opacity 0.2s;
+            }
+
+            .btn-back {
+                background: #f1f5f9;
+                color: #555;
+            }
+
+                .btn-back:hover {
+                    background: #e2e8f0;
+                    color: #333;
+                }
+
+            .btn-del {
+                background: #fee2e2;
+                color: #ef4444;
+            }
+
+                .btn-del:hover {
+                    opacity: 0.85;
+                }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+            <h1><i class="fas fa-user-clock"></i> Absence Detail</h1>
+            <span class="id-badge">#@Model.Id</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="item">
+                    <div class="lbl">Student Name</div>
+                    <div class="val">@Model.StudentName</div>
+                </div>
+                <div class="item">
+                    <div class="lbl">LCID</div>
+                    <div class="val" style="font-family:monospace;">@Model.LCID</div>
+                </div>
+                <div class="item">
+                    <div class="lbl">Semester</div>
+                    <div class="val">@Model.Semester</div>
+                </div>
+                <div class="item">
+                    <div class="lbl">Section</div>
+                    <div class="val">@Model.Section</div>
+                </div>
+                <div class="item full">
+                    <div class="lbl">Missed Class</div>
+                    <div class="val">@Model.MissedClass</div>
+                </div>
+                <div class="item full">
+                    <div class="lbl">Reason</div>
+                    <div class="val">@Model.Reason</div>
+                </div>
+                <div class="item">
+                    <div class="lbl">Submitted On</div>
+                    <div class="val">
+                        @Model.SubmittedDate.ToString("dd MMM yyyy")<br />
+                        <span style="color:#888;font-size:0.84rem;">
+                            @Model.SubmittedDate.ToString("hh:mm tt")
+                        </span>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="lbl">Status</div>
+                    <div class="val">
+                        <span class="reviewed-badge">
+                            <i class="fas fa-check"></i> Reviewed
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a href="/Attendance/AttendanceDashboard" class="btn btn-back">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+                <form method="post" asp-action="DeleteAbsence"
+                      style="flex:1;"
+                      onsubmit="return confirm('Delete this record?')">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-del" style="width:100%;">
+                        <i class="fas fa-trash"></i> Delete Record
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

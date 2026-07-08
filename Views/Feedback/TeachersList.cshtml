@@ -1,0 +1,636 @@
+﻿@model List<CollegeIssueManagement.Models.Teacher>
+@{
+    Layout = null;
+    var counts = ViewBag.FeedbackCounts as Dictionary<int, dynamic>
+                 ?? new Dictionary<int, dynamic>();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teachers List</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+            *, *::before, *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                background: #f8fafc;
+                color: #0f172a;
+            }
+
+            .app-shell {
+                display: flex;
+                min-height: 100vh;
+            }
+
+            /* ── Same Sidebar ── */
+            .app-sidebar {
+                width: 250px;
+                background: #081547;
+                display: flex;
+                flex-direction: column;
+                flex-shrink: 0;
+                position: sticky;
+                top: 0;
+                height: 100vh;
+            }
+
+            .sidebar-brand {
+                padding: 20px 18px 18px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                border-bottom: 1px solid rgba(255,255,255,0.07);
+            }
+
+            .sidebar-brand-icon {
+                width: 36px;
+                height: 36px;
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                border-radius: 9px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 1rem;
+                flex-shrink: 0;
+                box-shadow: 0 0 12px rgba(99,102,241,0.4);
+            }
+
+            .sidebar-brand-text {
+                color: #f1f5f9;
+                font-weight: 700;
+                font-size: 0.96rem;
+            }
+
+            .sidebar-brand-sub {
+                color: #475569;
+                font-size: 0.7rem;
+                margin-top: 1px;
+            }
+
+            .sidebar-nav {
+                flex: 1;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                overflow-y: auto;
+            }
+
+            .sidebar-section-label {
+                font-size: 0.62rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1.2px;
+                color: #334155;
+                padding: 14px 10px 5px;
+            }
+
+            .sidebar-link {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 9px 12px;
+                border-radius: 8px;
+                color: #64748b;
+                text-decoration: none;
+                font-size: 0.83rem;
+                font-weight: 500;
+                transition: all 0.15s;
+            }
+
+                .sidebar-link i {
+                    font-size: 0.85rem;
+                    width: 15px;
+                    text-align: center;
+                }
+
+                .sidebar-link:hover {
+                    background: rgba(99,102,241,0.08);
+                    color: #a5b4fc;
+                    text-decoration: none;
+                }
+
+                .sidebar-link.active {
+                    background: rgba(99,102,241,0.15);
+                    color: #a5b4fc;
+                    font-weight: 600;
+                    border-left: 2px solid #6366f1;
+                }
+
+                .sidebar-link.danger {
+                    color: #f87171;
+                }
+
+                    .sidebar-link.danger:hover {
+                        background: rgba(239,68,68,0.08);
+                        color: #fca5a5;
+                    }
+
+            .sidebar-divider {
+                height: 1px;
+                background: rgba(255,255,255,0.05);
+                margin: 8px 10px;
+            }
+
+            .sidebar-footer {
+                padding: 12px 10px;
+                border-top: 1px solid rgba(255,255,255,0.06);
+            }
+
+            @@media (max-width: 900px) {
+                .app-sidebar {
+                    width: 62px;
+                }
+
+                .sidebar-brand-text, .sidebar-brand-sub,
+                .sidebar-link span, .sidebar-section-label {
+                    display: none;
+                }
+
+                .sidebar-link {
+                    justify-content: center;
+                    padding: 10px;
+                }
+
+                .sidebar-brand {
+                    justify-content: center;
+                    padding: 18px 10px;
+                }
+            }
+
+            /* ── Main ── */
+            .app-main {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+            }
+
+            .app-topbar {
+                height: 54px;
+                background: white;
+                border-bottom: 1px solid #e2e8f0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 24px;
+                position: sticky;
+                top: 0;
+                z-index: 50;
+            }
+
+            .topbar-title {
+                font-size: 0.94rem;
+                font-weight: 700;
+                color: #0f172a;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+                .topbar-title i {
+                    color: #6366f1;
+                }
+
+            .topbar-welcome {
+                font-size: 0.83rem;
+                color: #64748b;
+                display: flex;
+                align-items: center;
+                gap: 7px;
+            }
+
+                .topbar-welcome i {
+                    color: #6366f1;
+                }
+
+            .app-content {
+                flex: 1;
+                padding: 22px 24px;
+            }
+
+            .container {
+                max-width: 1000px;
+                margin: 0 auto;
+            }
+
+            .page-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+            }
+
+            .page-title {
+                font-size: 1.05rem;
+                font-weight: 700;
+                color: #0f172a;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+                .page-title i {
+                    color: #6366f1;
+                }
+
+            .page-sub {
+                font-size: 0.8rem;
+                color: #64748b;
+                margin-top: 3px;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-size: 0.83rem;
+                font-weight: 600;
+                cursor: pointer;
+                border: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                text-decoration: none;
+                transition: all 0.15s;
+            }
+
+            .btn-indigo {
+                background: #6366f1;
+                color: white;
+            }
+
+                .btn-indigo:hover {
+                    background: #4f46e5;
+                    color: white;
+                }
+
+            /* ── Teacher Cards Grid ── */
+            .teachers-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+            }
+
+            .t-card {
+                background: white;
+                border-radius: 14px;
+                padding: 20px;
+                border: 1px solid #e2e8f0;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                text-decoration: none;
+                color: inherit;
+                transition: all 0.18s;
+                display: block;
+                position: relative;
+                overflow: hidden;
+            }
+
+                .t-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+                    opacity: 0;
+                    transition: opacity 0.18s;
+                }
+
+                .t-card:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 10px 24px rgba(99,102,241,0.12);
+                    border-color: #a5b4fc;
+                    color: inherit;
+                }
+
+                    .t-card:hover::before {
+                        opacity: 1;
+                    }
+
+            .t-card-top {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                margin-bottom: 14px;
+            }
+
+            .t-avatar {
+                width: 48px;
+                height: 48px;
+                border-radius: 12px;
+                background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #4f46e5;
+                font-size: 1.2rem;
+                flex-shrink: 0;
+            }
+
+            .t-name {
+                font-size: 0.94rem;
+                font-weight: 700;
+                color: #0f172a;
+            }
+
+            .t-sub {
+                font-size: 0.76rem;
+                color: #64748b;
+                margin-top: 3px;
+            }
+
+            .t-badges {
+                display: flex;
+                gap: 5px;
+                flex-wrap: wrap;
+                margin-bottom: 14px;
+            }
+
+            .t-badge {
+                padding: 3px 9px;
+                border-radius: 20px;
+                font-size: 0.71rem;
+                font-weight: 600;
+                display: inline-block;
+            }
+
+            .t-stats {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding-top: 12px;
+                border-top: 1px solid #f1f5f9;
+            }
+
+            .t-stat-val {
+                font-size: 1.3rem;
+                font-weight: 700;
+                color: #0f172a;
+            }
+
+            .t-stat-lbl {
+                font-size: 0.67rem;
+                color: #94a3b8;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                margin-top: 1px;
+            }
+
+            .t-view-btn {
+                padding: 6px 14px;
+                border-radius: 7px;
+                background: #ede9fe;
+                color: #6366f1;
+                font-size: 0.79rem;
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                text-decoration: none;
+                transition: all 0.15s;
+            }
+
+                .t-view-btn:hover {
+                    background: #6366f1;
+                    color: white;
+                }
+
+            .rating-bar {
+                height: 5px;
+                border-radius: 100px;
+                background: #f1f5f9;
+                margin-top: 10px;
+                overflow: hidden;
+            }
+
+            .rating-bar-fill {
+                height: 100%;
+                border-radius: 100px;
+                background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            }
+
+            .no-feedback {
+                font-size: 0.76rem;
+                color: #94a3b8;
+                padding: 8px 0;
+                font-style: italic;
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 64px 20px;
+                color: #94a3b8;
+                background: white;
+                border-radius: 14px;
+                border: 1px solid #e2e8f0;
+            }
+
+                .empty-state i {
+                    font-size: 2.8rem;
+                    margin-bottom: 14px;
+                    display: block;
+                    color: #cbd5e1;
+                }
+
+            @@media (max-width: 900px) {
+                .teachers-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+
+            @@media (max-width: 560px) {
+                .teachers-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- ── Sidebar ── -->
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <div>
+                    <div class="sidebar-brand-text">Feedback</div>
+                    <div class="sidebar-brand-sub">Texas College</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <span class="sidebar-section-label">Main</span>
+                <a href="/Feedback/FeedbackDashboard" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/Feedback/ManageTeachers" class="sidebar-link">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Manage Teachers</span>
+                </a>
+                <div class="sidebar-divider"></div>
+                <span class="sidebar-section-label">Teachers</span>
+                <a href="/Feedback/TeachersList" class="sidebar-link active">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Teachers List</span>
+                </a>
+                <div class="sidebar-divider"></div>
+                <span class="sidebar-section-label">Export</span>
+                <a href="/Feedback/ExportFeedback" class="sidebar-link">
+                    <i class="fas fa-download"></i>
+                    <span>Export All</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/Feedback/FeedbackLogout" class="sidebar-link danger">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Portal</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- ── Main ── -->
+        <div class="app-main">
+            <div class="app-topbar">
+                <div class="topbar-title">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Teachers List
+                </div>
+                <span class="topbar-welcome">
+                    <i class="fas fa-building"></i>
+                    Texas College of Management & IT
+                </span>
+            </div>
+
+            <div class="app-content">
+                <div class="container">
+
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                                All Teachers
+                            </div>
+                            <div class="page-sub">
+                                Click any teacher card to view their feedback
+                            </div>
+                        </div>
+                        <a href="/Feedback/ManageTeachers" class="btn btn-indigo">
+                            <i class="fas fa-plus"></i> Add Teacher
+                        </a>
+                    </div>
+
+                    @if (Model.Any())
+                    {
+                        <div class="teachers-grid">
+                            @foreach (var t in Model)
+                            {
+                                dynamic? cnt = counts.ContainsKey(t.Id)
+                                    ? counts[t.Id] : null;
+                                int tCount = cnt != null ? (int)cnt.Count : 0;
+                                int tExc = cnt != null ? (int)cnt.Excellent : 0;
+                                double pct = tCount > 0
+                                    ? Math.Round((double)tExc / tCount * 100) : 0;
+
+                                <a href="/Feedback/TeacherDetail/@t.Id"
+                                   class="t-card">
+                                    <div class="t-card-top">
+                                        <div class="t-avatar">
+                                            <i class="fas fa-user-tie"></i>
+                                        </div>
+                                        <div>
+                                            <div class="t-name">@t.FullName</div>
+                                            <div class="t-sub">@t.Subject</div>
+                                        </div>
+                                    </div>
+                                    <div class="t-badges">
+                                        <span class="t-badge"
+                                              style="background:#e0e7ff;color:#4f46e5;">
+                                            @t.Semester
+                                        </span>
+                                        @if (!string.IsNullOrEmpty(t.ProfessionalClass))
+                                        {
+                                            <span class="t-badge"
+                                                  style="background:#eff6ff;color:#2563eb;">
+                                                @t.ProfessionalClass
+                                            </span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(t.Designation))
+                                        {
+                                            <span class="t-badge"
+                                                  style="background:#f8fafc;color:#475569;
+                                                border:1px solid #e2e8f0;">
+                                                @t.Designation
+                                            </span>
+                                        }
+                                    </div>
+                                    <div class="t-stats">
+                                        <div>
+                                            <div class="t-stat-val">@tCount</div>
+                                            <div class="t-stat-lbl">Feedbacks</div>
+                                        </div>
+                                        @if (tCount > 0)
+                                        {
+                                            <div style="text-align:center;">
+                                                <div class="t-stat-val"
+                                                     style="color:#16a34a;">
+                                                    @pct%
+                                                </div>
+                                                <div class="t-stat-lbl">Excellent</div>
+                                            </div>
+                                        }
+                                        <span class="t-view-btn">
+                                            <i class="fas fa-eye"></i> View
+                                        </span>
+                                    </div>
+                                    @if (tCount > 0)
+                                    {
+                                        <div class="rating-bar">
+                                            <div class="rating-bar-fill"
+                                                 style="width:@pct%"></div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <p class="no-feedback">No feedback submitted yet</p>
+                                    }
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <p style="font-size:1rem;font-weight:600;color:#475569;
+                                margin-bottom:6px;">
+                                No teachers added yet
+                            </p>
+                            <p style="font-size:0.84rem;">
+                                Add teachers from Manage Teachers
+                            </p>
+                            <a href="/Feedback/ManageTeachers"
+                               style="display:inline-flex;align-items:center;gap:7px;
+                                margin-top:16px;padding:9px 20px;
+                                background:#6366f1;color:white;border-radius:8px;
+                                font-size:0.84rem;font-weight:600;text-decoration:none;">
+                                <i class="fas fa-plus"></i> Add First Teacher
+                            </a>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

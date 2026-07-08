@@ -1,0 +1,631 @@
+﻿@model List<CollegeIssueManagement.Models.TeacherFeedback>
+@{
+    Layout = null;
+
+    // Fallbacks for aggregated counts sent from Controller
+    int totalCount = ViewBag.TotalCount ?? 0;
+    int excellentCount = ViewBag.ExcellentCount ?? 0;
+    int goodCount = ViewBag.GoodCount ?? 0;
+    int averageCount = ViewBag.AverageCount ?? 0;
+    int belowAvgCount = ViewBag.BelowAvgCount ?? 0;
+
+    // Calculate percentage breakdown for the visual graphs
+    double excPct = totalCount > 0 ? Math.Round((double)excellentCount / totalCount * 100) : 0;
+    double goodPct = totalCount > 0 ? Math.Round((double)goodCount / totalCount * 100) : 0;
+    double avgPct = totalCount > 0 ? Math.Round((double)averageCount / totalCount * 100) : 0;
+    double bAvgPct = totalCount > 0 ? Math.Round((double)belowAvgCount / totalCount * 100) : 0;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Detail - @ViewBag.TeacherName</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+            *, *::before, *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                background: #f8fafc;
+                color: #0f172a;
+            }
+
+            .app-shell {
+                display: flex;
+                min-height: 100vh;
+            }
+
+            /* ── Sidebar ── */
+            .app-sidebar {
+                width: 250px;
+                background: #081547;
+                display: flex;
+                flex-direction: column;
+                flex-shrink: 0;
+                position: sticky;
+                top: 0;
+                height: 100vh;
+            }
+
+            .sidebar-brand {
+                padding: 20px 18px 18px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                border-bottom: 1px solid rgba(255,255,255,0.07);
+            }
+
+            .sidebar-brand-icon {
+                width: 36px;
+                height: 36px;
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                border-radius: 9px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 1rem;
+                flex-shrink: 0;
+                box-shadow: 0 0 12px rgba(99,102,241,0.4);
+            }
+
+            .sidebar-brand-text {
+                color: #f1f5f9;
+                font-weight: 700;
+                font-size: 0.96rem;
+            }
+
+            .sidebar-brand-sub {
+                color: #475569;
+                font-size: 0.7rem;
+                margin-top: 1px;
+            }
+
+            .sidebar-nav {
+                flex: 1;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                overflow-y: auto;
+            }
+
+            .sidebar-section-label {
+                font-size: 0.62rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1.2px;
+                color: #334155;
+                padding: 14px 10px 5px;
+            }
+
+            .sidebar-link {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 9px 12px;
+                border-radius: 8px;
+                color: #64748b;
+                text-decoration: none;
+                font-size: 0.83rem;
+                font-weight: 500;
+                transition: all 0.15s;
+            }
+
+                .sidebar-link i {
+                    font-size: 0.85rem;
+                    width: 15px;
+                    text-align: center;
+                }
+
+                .sidebar-link:hover {
+                    background: rgba(99,102,241,0.08);
+                    color: #a5b4fc;
+                }
+
+                .sidebar-link.active {
+                    background: rgba(99,102,241,0.15);
+                    color: #a5b4fc;
+                    font-weight: 600;
+                    border-left: 2px solid #6366f1;
+                }
+
+                .sidebar-link.danger {
+                    color: #f87171;
+                }
+
+                    .sidebar-link.danger:hover {
+                        background: rgba(239,68,68,0.08);
+                        color: #fca5a5;
+                    }
+
+            .sidebar-divider {
+                height: 1px;
+                background: rgba(255,255,255,0.05);
+                margin: 8px 10px;
+            }
+
+            /* ── Main Layout ── */
+            .app-main {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+            }
+
+            .app-topbar {
+                height: 54px;
+                background: white;
+                border-bottom: 1px solid #e2e8f0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 24px;
+                position: sticky;
+                top: 0;
+                z-index: 50;
+            }
+
+            .topbar-title {
+                font-size: 0.94rem;
+                font-weight: 700;
+                color: #0f172a;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+                .topbar-title i {
+                    color: #6366f1;
+                }
+
+            .app-content {
+                flex: 1;
+                padding: 22px 24px;
+            }
+
+            .container {
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+
+            /* ── Profile & Summary Section ── */
+            .profile-banner {
+                background: white;
+                border-radius: 14px;
+                padding: 24px;
+                border: 1px solid #e2e8f0;
+                margin-bottom: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .profile-info {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .profile-avatar {
+                width: 60px;
+                height: 60px;
+                border-radius: 14px;
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 1.6rem;
+            }
+
+            .profile-name {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #0f172a;
+            }
+
+            .profile-meta {
+                font-size: 0.85rem;
+                color: #64748b;
+                margin-top: 4px;
+                display: flex;
+                gap: 12px;
+            }
+
+                .profile-meta span i {
+                    margin-right: 4px;
+                    color: #6366f1;
+                }
+
+            /* ── Analytics Layout ── */
+            .analytics-row {
+                display: grid;
+                grid-template-columns: 1fr 2fr;
+                gap: 20px;
+                margin-bottom: 24px;
+            }
+
+            .metric-card {
+                background: white;
+                border-radius: 14px;
+                padding: 24px;
+                border: 1px solid #e2e8f0;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .metric-value {
+                font-size: 3rem;
+                font-weight: 800;
+                color: #0f172a;
+                line-height: 1;
+            }
+
+            .metric-label {
+                font-size: 0.85rem;
+                color: #64748b;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-top: 8px;
+            }
+
+            .distribution-card {
+                background: white;
+                border-radius: 14px;
+                padding: 24px;
+                border: 1px solid #e2e8f0;
+            }
+
+            .dist-title {
+                font-size: 0.95rem;
+                font-weight: 700;
+                margin-bottom: 16px;
+                color: #334155;
+            }
+
+            .dist-item {
+                margin-bottom: 12px;
+            }
+
+                .dist-item:last-child {
+                    margin-bottom: 0;
+                }
+
+            .dist-info {
+                display: flex;
+                justify-content: space-between;
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: #475569;
+                margin-bottom: 4px;
+            }
+
+            .progress-bar-container {
+                height: 8px;
+                background: #f1f5f9;
+                border-radius: 100px;
+                overflow: hidden;
+            }
+
+            .progress-bar-fill {
+                height: 100%;
+                border-radius: 100px;
+                transition: width 0.3s ease;
+            }
+
+            /* ── Comments Feed ── */
+            .feed-card {
+                background: white;
+                border-radius: 14px;
+                border: 1px solid #e2e8f0;
+                padding: 24px;
+            }
+
+            .feed-title {
+                font-size: 1rem;
+                font-weight: 700;
+                color: #0f172a;
+                margin-bottom: 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+                .feed-title i {
+                    color: #6366f1;
+                }
+
+            .comment-item {
+                padding: 16px;
+                border-radius: 10px;
+                background: #f8fafc;
+                border: 1px solid #f1f5f9;
+                margin-bottom: 12px;
+            }
+
+                .comment-item:last-child {
+                    margin-bottom: 0;
+                }
+
+            .comment-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+            }
+
+            .badge-rating {
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 0.72rem;
+                font-weight: 700;
+                text-transform: uppercase;
+            }
+
+            .rating-excellent {
+                background: #dcfce7;
+                color: #16a34a;
+            }
+
+            .rating-good {
+                background: #dbeafe;
+                color: #2563eb;
+            }
+
+            .rating-average {
+                background: #fef9c3;
+                color: #ca8a04;
+            }
+
+            .rating-below {
+                background: #fee2e2;
+                color: #dc2626;
+            }
+
+            .comment-date {
+                font-size: 0.75rem;
+                color: #94a3b8;
+            }
+
+            .comment-text {
+                font-size: 0.88rem;
+                color: #334155;
+                line-height: 1.5;
+            }
+
+            .empty-comments {
+                text-align: center;
+                padding: 40px 20px;
+                color: #94a3b8;
+                font-size: 0.88rem;
+            }
+
+                .empty-comments i {
+                    font-size: 2rem;
+                    color: #cbd5e1;
+                    margin-bottom: 8px;
+                    display: block;
+                }
+
+            .btn-back {
+                background: #ede9fe;
+                color: #6366f1;
+                padding: 8px 16px;
+                border-radius: 8px;
+                text-decoration: none;
+                font-size: 0.84rem;
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                transition: all 0.15s;
+            }
+
+                .btn-back:hover {
+                    background: #6366f1;
+                    color: white;
+                }
+
+            /* Responsive breakpoints layout tweaks */
+            @@media (max-width: 768px) {
+                .analytics-row {
+                    grid-template-columns: 1fr;
+                }
+
+                .app-sidebar {
+                    width: 62px;
+                }
+
+                .sidebar-brand-text, .sidebar-brand-sub, .sidebar-link span, .sidebar-section-label {
+                    display: none;
+                }
+
+                .sidebar-link, .sidebar-brand {
+                    justify-content: center;
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- ── Sidebar ── -->
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <div>
+                    <div class="sidebar-brand-text">Feedback</div>
+                    <div class="sidebar-brand-sub">Texas College</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <span class="sidebar-section-label">Main</span>
+                <a href="/Feedback/FeedbackDashboard" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/Feedback/ManageTeachers" class="sidebar-link">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Manage Teachers</span>
+                </a>
+                <div class="sidebar-divider"></div>
+                <span class="sidebar-section-label">Teachers</span>
+                <a href="/Feedback/TeachersList" class="sidebar-link active">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Teachers List</span>
+                </a>
+                <div class="sidebar-divider"></div>
+                <span class="sidebar-section-label">Export</span>
+                <a href="/Feedback/ExportFeedback" class="sidebar-link">
+                    <i class="fas fa-download"></i>
+                    <span>Export All</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- ── Main Workspace ── -->
+        <div class="app-main">
+            <div class="app-topbar">
+                <div class="topbar-title">
+                    <i class="fas fa-eye"></i>
+                    Feedback Profile Detailed Breakdown
+                </div>
+                <a href="/Feedback/TeachersList" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+
+            <div class="app-content">
+                <div class="container">
+
+                    <!-- ── Teacher Info Header Banner ── -->
+                    <div class="profile-banner">
+                        <div class="profile-info">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <h1 class="profile-name">@ViewBag.TeacherName</h1>
+                                <div class="profile-meta">
+                                    <span><i class="fas fa-book"></i> @ViewBag.Subject</span>
+                                    <span><i class="fas fa-graduation-cap"></i> Semester @ViewBag.Semester</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Analytics Row ── -->
+                    <div class="analytics-row">
+                        <!-- Total Counter -->
+                        <div class="metric-card">
+                            <div class="metric-value">@totalCount</div>
+                            <div class="metric-label">Total Submissions</div>
+                        </div>
+
+                        <!-- Graph Bars Distribution Box -->
+                        <div class="distribution-card">
+                            <h2 class="dist-title">Rating Breakdown</h2>
+
+                            <!-- Excellent Bar -->
+                            <div class="dist-item">
+                                <div class="dist-info">
+                                    <span>Excellent</span>
+                                    <span>@excellentCount (@excPct%)</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: @excPct%; background-color: #16a34a;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Good Bar -->
+                            <div class="dist-item">
+                                <div class="dist-info">
+                                    <span>Good</span>
+                                    <span>@goodCount (@goodPct%)</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: @goodPct%; background-color: #2563eb;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Average Bar -->
+                            <div class="dist-item">
+                                <div class="dist-info">
+                                    <span>Average</span>
+                                    <span>@averageCount (@avgPct%)</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: @avgPct%; background-color: #ca8a04;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Below Average Bar -->
+                            <div class="dist-item">
+                                <div class="dist-info">
+                                    <span>Below Average</span>
+                                    <span>@belowAvgCount (@bAvgPct%)</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: @bAvgPct%; background-color: #dc2626;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Text Feed Comments Section ── -->
+                    <div class="feed-card">
+                        <h2 class="feed-title">
+                            <i class="far fa-comments"></i> Student Responses & Remarks
+                        </h2>
+
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var feedback in Model)
+                            {
+                                string cssClass = "rating-average";
+                                if (feedback.Rating == "Excellent") cssClass = "rating-excellent";
+                                else if (feedback.Rating == "Good") cssClass = "rating-good";
+                                else if (feedback.Rating == "Below Average") cssClass = "rating-below";
+
+                                <div class="comment-item">
+                                    <div class="comment-header">
+                                        <span class="badge-rating @cssClass">@feedback.Rating</span>
+                                        <span class="comment-date">
+                                            <i class="far fa-clock"></i>
+                                            @feedback.SubmittedDate.ToString("MMMM dd, yyyy")
+                                        </span>
+                                    </div>
+                                    <p class="comment-text">
+                                        @(string.IsNullOrWhiteSpace(feedback.FeedbackText) ? "No remarks provided." : feedback.FeedbackText)
+                                    </p>
+                                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 6px;">
+                                        <i class="fas fa-user"></i> By: @(feedback.IsAnonymous ? "Anonymous Student" : feedback.StudentName)
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty-comments">
+                                <i class="fas fa-comment-slash"></i>
+                                No evaluation remarks recorded for this instructor yet.
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

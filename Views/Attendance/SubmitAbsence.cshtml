@@ -1,0 +1,304 @@
+﻿@model CollegeIssueManagement.Models.AbsenceRecord
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report Absence — Texas College</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+            *, *::before, *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+                background: #f8fafc; 
+                min-height: 100vh;
+                display: flex;
+                align-items: flex-start; 
+                justify-content: center;
+                padding: 16px;
+            }
+
+            .form-container {
+                background: white;
+                width: 100%;
+                max-width: 600px;
+                padding: 24px;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05); 
+            }
+
+            .error-alert {
+                background: #fef2f2;
+                border: 1px solid #fee2e2;
+                border-left: 4px solid #ef4444;
+                border-radius: 8px;
+                padding: 12px 16px;
+                margin-bottom: 24px;
+                font-size: 0.88rem;
+                color: #991b1b;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .field {
+                margin-bottom: 20px;
+            }
+
+                .field label {
+                    display: block;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    color: #475569; /* Slate grey header metadata text */
+                    margin-bottom: 6px;
+                }
+
+            .req {
+                color: #ef4444;
+                margin-left: 2px;
+            }
+
+            .inp {
+                position: relative;
+            }
+
+                .inp i {
+                    position: absolute;
+                    left: 14px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #94a3b8;
+                    font-size: 0.9rem;
+                    pointer-events: none;
+                }
+
+                /* Standardized Premium Input Architecture */
+                .inp input,
+                .inp select,
+                .inp textarea {
+                    width: 100%;
+                    padding: 11px 14px 11px 40px;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 8px;
+                    font-family: inherit;
+                    font-size: 0.92rem;
+                    background: #ffffff;
+                    color: #0f172a;
+                    outline: none;
+                    transition: all 0.15s ease-in-out;
+                    appearance: none;
+                }
+
+                /* Clean native chevron for custom select fields */
+                .inp select {
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+                    background-repeat: no-repeat;
+                    background-position: right 14px center;
+                    background-size: 16px;
+                    padding-right: 40px;
+                }
+
+                .inp.no-icon input,
+                .inp.no-icon select,
+                .inp.no-icon textarea {
+                    padding-left: 14px;
+                }
+
+                /* Focus state behaviors matching top-tier design libraries */
+                .inp input:focus,
+                .inp select:focus,
+                .inp textarea:focus {
+                    border-color: #2563eb; /* Cobalt Blue core focus boundary */
+                    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+                }
+
+                .inp textarea {
+                    resize: vertical;
+                    min-height: 100px;
+                    line-height: 1.5;
+                }
+
+            .field-err {
+                font-size: 0.8rem;
+                color: #dc2626;
+                margin-top: 5px;
+                display: block;
+                font-weight: 500;
+            }
+
+            .row2 {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+
+            /* Modern Corporate Submit Action button */
+            .btn-submit {
+                width: 100%;
+                margin-top: 8px;
+                padding: 12px 24px;
+                background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); /* Slate Blue to Indigo theme gradient */
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 0.95rem;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+                transition: all 0.2s ease;
+            }
+
+                .btn-submit:hover {
+                    background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%);
+                    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+                    transform: translateY(-0.5px);
+                }
+
+                .btn-submit:active {
+                    transform: translateY(0.5px);
+                }
+
+                .btn-submit:disabled {
+                    opacity: 0.65;
+                    cursor: not-allowed;
+                    box-shadow: none;
+                }
+
+            @@media (max-width: 540px) {
+                .row2 {
+                    grid-template-columns: 1fr;
+                    gap: 0;
+                }
+
+                body {
+                    padding: 8px;
+                }
+
+                .form-container {
+                    padding: 16px;
+                    border-radius: 8px;
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="error-alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Please fill in all required fields correctly.</span>
+            </div>
+        }
+
+        <form asp-action="SubmitAbsence" method="post" id="absForm">
+            @Html.AntiForgeryToken()
+
+            <div class="row2">
+                <div class="field">
+                    <label>Full Name <span class="req">*</span></label>
+                    <div class="inp">
+                        <i class="fas fa-user"></i>
+                        <input asp-for="StudentName" placeholder="Your full name" />
+                    </div>
+                    <span asp-validation-for="StudentName" class="field-err"></span>
+                </div>
+
+                <div class="field">
+                    <label>LCID <span class="req">*</span></label>
+                    <div class="inp">
+                        <i class="fas fa-id-badge"></i>
+                        <input asp-for="LCID" placeholder="e.g. LC001234" />
+                    </div>
+                    <span asp-validation-for="LCID" class="field-err"></span>
+                </div>
+            </div>
+
+            <div class="row2">
+                <div class="field">
+                    <label>Semester <span class="req">*</span></label>
+                    <div class="inp no-icon">
+                        <select asp-for="Semester">
+                            <option value="">Select semester</option>
+                            <option>1st Semester</option>
+                            <option>2nd Semester</option>
+                            <option>3rd Semester</option>
+                            <option>4th Semester</option>
+                            <option>5th Semester</option>
+                            <option>6th Semester</option>
+                            <option>7th Semester</option>
+                            <option>8th Semester</option>
+                        </select>
+                    </div>
+                    <span asp-validation-for="Semester" class="field-err"></span>
+                </div>
+
+                <div class="field">
+                    <label>Section <span class="req">*</span></label>
+                    <div class="inp no-icon">
+                        <select asp-for="Section">
+                            <option value="">Select section</option>
+                            <option>Section A</option>
+                            <option>Section B</option>
+                            <option>Section C</option>
+                            <option>Section D</option>
+                        </select>
+                    </div>
+                    <span asp-validation-for="Section" class="field-err"></span>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Class Missed <span class="req">*</span></label>
+                <div class="inp">
+                    <i class="fas fa-book"></i>
+                    <input asp-for="MissedClass" placeholder="e.g. Database Management — 10:00 AM" />
+                </div>
+                <span asp-validation-for="MissedClass" class="field-err"></span>
+            </div>
+
+            <div class="field">
+                <label>Reason for Absence <span class="req">*</span></label>
+                <div class="inp no-icon">
+                    <textarea asp-for="Reason" placeholder="Explain clearly why you missed the class..."></textarea>
+                </div>
+                <span asp-validation-for="Reason" class="field-err"></span>
+            </div>
+
+            <button type="submit" class="btn-submit" id="subBtn">
+                <i class="fas fa-paper-plane"></i>
+                <span id="subTxt">Submit Report</span>
+                <i class="fas fa-spinner fa-spin" id="subSpin" style="display:none;"></i>
+            </button>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        document.getElementById('absForm').addEventListener('submit', function (e) {
+        // Check if form validation passes before firing the loading indicator animation
+        if ($(this).valid()) {
+        document.getElementById('subBtn').disabled = true;
+        document.getElementById('subTxt').textContent = 'Submitting...';
+        document.getElementById('subSpin').style.display = 'inline-block';
+        }
+        });
+    </script>
+</body>
+</html>

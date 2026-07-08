@@ -4,6 +4,7 @@ using CollegeIssueManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CollegeIssueManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260626011633_AddTeacherFeedback")]
+    partial class AddTeacherFeedback
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -113,7 +116,7 @@ namespace CollegeIssueManagement.Migrations
                             Id = 1,
                             Email = "admin@texascollege.edu.np",
                             FullName = "Administrator",
-                            LastLogin = new DateTime(2026, 7, 2, 19, 52, 21, 666, DateTimeKind.Local).AddTicks(2282),
+                            LastLogin = new DateTime(2026, 6, 25, 18, 16, 33, 44, DateTimeKind.Local).AddTicks(4068),
                             Password = "Admin@1991",
                             Username = "Admin"
                         });
@@ -360,37 +363,6 @@ namespace CollegeIssueManagement.Migrations
                     b.HasIndex("IssueId");
 
                     b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("CollegeIssueManagement.Models.QRCodeSetting", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Icon")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("IssueType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("QRCodeSettings");
                 });
 
             modelBuilder.Entity("CollegeIssueManagement.Models.Teacher", b =>

@@ -17,59 +17,28 @@
     </div>
 
     <div class="field">
-        <label>Internship Type <span class="req">*</span></label>
-        <div class="input-box no-ico sel-box">
-            <select asp-for="InternshipType" required>
-                <option value="">Select type</option>
-                <option>Academic Internship</option>
-                <option>Industrial Internship</option>
-                <option>Research Internship</option>
-                <option>Voluntary Internship</option>
-            </select>
-        </div>
-        <span asp-validation-for="InternshipType" class="field-error"></span>
-    </div>
-
-    <div class="field">
         <label>Preferred Field / Domain <span class="req">*</span></label>
         <div class="input-box no-ico sel-box">
-            <select asp-for="PreferredField" required>
+            <select asp-for="PreferredField" id="preferredFieldSelect" required>
                 <option value="">Select field</option>
-                <option>Web Development</option>
-                <option>Mobile Development</option>
-                <option>Data Science / AI</option>
-                <option>Networking / IT Support</option>
-                <option>Cybersecurity</option>
-                <option>UI/UX Design</option>
-                <option>Other</option>
+                <option value="Web Development">Web Development</option>
+                <option value="Mobile Development">Mobile Development</option>
+                <option value="Data Science / AI">Data Science / AI</option>
+                <option value="Networking / IT Support">Networking / IT Support</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="UI/UX Design">UI/UX Design</option>
+                <option value="Other">Other (Specify below)</option>
             </select>
         </div>
         <span asp-validation-for="PreferredField" class="field-error"></span>
     </div>
 
-    <div class="field">
-        <label>Company Name (if already found)</label>
+    <div class="field" id="customPreferredFieldWrap" style="display:none;">
+        <label>Specify Preferred Field <span class="req">*</span></label>
         <div class="input-box">
-            <i class="fas fa-building ico"></i>
-            <input asp-for="CompanyName"
-                   placeholder="e.g. Tech Solutions Pvt. Ltd." />
+            <i class="fas fa-edit ico"></i>
+            <input type="text" id="customPreferredFieldInput" placeholder="e.g. Game Development, Cloud Computing..." />
         </div>
-        <span asp-validation-for="CompanyName" class="field-error"></span>
-    </div>
-
-    <div class="field">
-        <label>Guidance Needed For</label>
-        <div class="input-box no-ico sel-box">
-            <select asp-for="GuidanceNeeded">
-                <option value="">Select (optional)</option>
-                <option>Finding a Company</option>
-                <option>Resume / CV Preparation</option>
-                <option>Interview Preparation</option>
-                <option>Documentation / Letter</option>
-                <option>Technical Skills</option>
-            </select>
-        </div>
-        <span asp-validation-for="GuidanceNeeded" class="field-error"></span>
     </div>
 
     <div class="field">
@@ -84,6 +53,19 @@
             </select>
         </div>
         <span asp-validation-for="PreferredDuration" class="field-error"></span>
+    </div>
+
+    <div class="field f-full">
+        <label>Upload Curriculum Vitae (CV) <span class="req">*</span></label>
+        <div class="input-box">
+            <i class="fas fa-file-upload ico"></i>
+            <input type="file" asp-for="CVFile" accept=".pdf,.doc,.docx" required
+                   style="padding-top: 10px; cursor: pointer;" />
+        </div>
+        <span style="font-size:0.75rem; color:#888; margin-top:4px; display:block;">
+            Supported formats: PDF, DOC, DOCX (Max size: 5MB)
+        </span>
+        <span asp-validation-for="CVFile" class="field-error"></span>
     </div>
 
     <div class="field f-full">
@@ -134,11 +116,34 @@
 <input type="hidden" asp-for="StudentPhone" />
 
 <script>
+    // Previous Experience Display Logic
     const hasPrev = document.getElementById('hasPrevExp');
     const prevWrap = document.getElementById('prevCompanyWrap');
     if (hasPrev) {
         hasPrev.addEventListener('change', () => {
             prevWrap.style.display = hasPrev.checked ? 'block' : 'none';
+        });
+    }
+
+    // Dynamic Tracking for 'Other' Preferred Field Selection
+    const fieldSelect = document.getElementById('preferredFieldSelect');
+    const customFieldWrap = document.getElementById('customPreferredFieldWrap');
+    const customFieldInput = document.getElementById('customPreferredFieldInput');
+
+    if (fieldSelect && customFieldWrap && customFieldInput) {
+        fieldSelect.addEventListener('change', function () {
+            if (this.value === 'Other') {
+                customFieldWrap.style.display = 'block';
+                customFieldInput.setAttribute('required', 'required');
+                customFieldInput.name = "PreferredField"; 
+                fieldSelect.removeAttribute('name');       
+            } else {
+                customFieldWrap.style.display = 'none';
+                customFieldInput.removeAttribute('required');
+                customFieldInput.value = '';
+                customFieldInput.removeAttribute('name');
+                fieldSelect.setAttribute('name', 'PreferredField'); 
+            }
         });
     }
 </script>

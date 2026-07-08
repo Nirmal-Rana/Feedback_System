@@ -1,0 +1,854 @@
+﻿@model CollegeIssueManagement.Models.TeacherFeedback
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Feedback — Texas College</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+            *, *::before, *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background-color: #f1f5f9;
+                color: #1e293b;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px 20px;
+            }
+
+            .card {
+                background: white;
+                border-radius: 16px;
+                width: 100%;
+                max-width: 580px;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0,0,0,0.03);
+                overflow: hidden;
+            }
+
+            .card-header {
+                background: #1e293b;
+                padding: 32px 30px;
+                text-align: center;
+                color: white;
+                border-bottom: 4px solid #4f46e5;
+            }
+
+                .card-header .icon-box {
+                    width: 56px;
+                    height: 56px;
+                    background: rgba(255,255,255,0.1);
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.5rem;
+                    margin: 0 auto 12px;
+                    color: #f8fafc;
+                }
+
+                .card-header h1 {
+                    font-size: 1.4rem;
+                    font-weight: 700;
+                    margin-bottom: 4px;
+                    letter-spacing: -0.02em;
+                }
+
+                .card-header p {
+                    color: #94a3b8;
+                    font-size: 0.88rem;
+                    font-weight: 500;
+                }
+
+            .card-body {
+                padding: 32px 30px;
+            }
+
+            .error-alert {
+                background: #fef2f2;
+                border-left: 4px solid #ef4444;
+                border-radius: 8px;
+                padding: 14px;
+                margin-bottom: 24px;
+                font-size: 0.88rem;
+                color: #991b1b;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .field {
+                margin-bottom: 20px;
+            }
+
+                .field label.field-title {
+                    display: block;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #475569;
+                    margin-bottom: 8px;
+                }
+
+            .req {
+                color: #ef4444;
+                margin-left: 2px;
+            }
+
+            .inp {
+                position: relative;
+            }
+
+                .inp i {
+                    position: absolute;
+                    left: 14px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #94a3b8;
+                    font-size: 0.9rem;
+                    pointer-events: none;
+                }
+
+                .inp input, .inp select, .inp textarea {
+                    width: 100%;
+                    padding: 12px 14px 12px 40px;
+                    border: 1.5px solid #cbd5e1;
+                    border-radius: 8px;
+                    font-family: inherit;
+                    font-size: 0.92rem;
+                    background: #fff;
+                    color: #1e293b;
+                    outline: none;
+                    appearance: none;
+                    transition: all 0.2s ease;
+                }
+
+                .inp.no-icon input,
+                .inp.no-icon select,
+                .inp.no-icon textarea {
+                    padding-left: 14px;
+                }
+
+                .inp input:focus, .inp select:focus, .inp textarea:focus {
+                    border-color: #4f46e5;
+                    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+                }
+
+                .inp select {
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+                    background-repeat: no-repeat;
+                    background-position: right 14px center;
+                    background-size: 16px;
+                    padding-right: 40px;
+                }
+
+                .inp textarea {
+                    resize: vertical;
+                    min-height: 100px;
+                }
+
+            .field-err {
+                font-size: 0.78rem;
+                color: #ef4444;
+                margin-top: 6px;
+                display: block;
+                font-weight: 500;
+            }
+
+            .row2 {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                transition: all 0.3s ease;
+            }
+
+            /* Step indicator */
+            .step-indicator {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 24px;
+                padding: 12px 16px;
+                background: #f8fafc;
+                border-radius: 8px;
+                border: 1.5px solid #e2e8f0;
+            }
+
+            .step-dot {
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+                font-weight: 700;
+                flex-shrink: 0;
+                background: #e2e8f0;
+                color: #64748b;
+                transition: all 0.3s;
+            }
+
+                .step-dot.active {
+                    background: #4f46e5;
+                    color: white;
+                }
+
+                .step-dot.done {
+                    background: #10b981;
+                    color: white;
+                }
+
+            .step-line {
+                flex: 1;
+                height: 2px;
+                background: #e2e8f0;
+                border-radius: 2px;
+                transition: background 0.3s;
+            }
+
+                .step-line.done {
+                    background: #10b981;
+                }
+
+            /* Rating buttons */
+            .rating-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+                margin-top: 4px;
+            }
+
+            .rating-btn {
+                padding: 12px 8px;
+                border-radius: 8px;
+                border: 1.5px solid #cbd5e1;
+                background: #fff;
+                font-size: 0.82rem;
+                font-weight: 600;
+                cursor: pointer;
+                text-align: center;
+                transition: all 0.2s;
+                color: #475569;
+            }
+
+                .rating-btn:hover {
+                    border-color: #4f46e5;
+                    background: #f5f3ff;
+                    color: #4f46e5;
+                }
+
+                .rating-btn.selected {
+                    color: white;
+                    border-color: transparent;
+                }
+
+                .rating-btn[data-val="Excellent"].selected {
+                    background: #10b981;
+                }
+
+                .rating-btn[data-val="Good"].selected {
+                    background: #3b82f6;
+                }
+
+                .rating-btn[data-val="Average"].selected {
+                    background: #f59e0b;
+                }
+
+                .rating-btn[data-val="Below Average"].selected {
+                    background: #ef4444;
+                }
+
+            /* Teacher selection cards */
+            .teacher-cards {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 4px;
+            }
+
+            .teacher-card-opt {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 14px;
+                background: #fff;
+                border: 1.5px solid #cbd5e1;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+                .teacher-card-opt:hover {
+                    border-color: #4f46e5;
+                    background: #f5f3ff;
+                }
+
+                .teacher-card-opt.selected {
+                    border-color: #4f46e5;
+                    background: #f5f3ff;
+                }
+
+                .teacher-card-opt input[type=radio] {
+                    display: none;
+                }
+
+            .teacher-avatar-sm {
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                background: #e2e8f0;
+                color: #475569;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
+                flex-shrink: 0;
+                transition: all 0.2s;
+            }
+
+            .teacher-card-opt.selected .teacher-avatar-sm {
+                background: #4f46e5;
+                color: white;
+            }
+
+            .teacher-card-name {
+                font-weight: 600;
+                font-size: 0.92rem;
+                color: #1e293b;
+            }
+
+            .teacher-card-desig {
+                font-size: 0.78rem;
+                color: #64748b;
+                margin-top: 2px;
+            }
+
+            .selected-check {
+                margin-left: auto;
+                color: #4f46e5;
+                font-size: 1.2rem;
+                display: none;
+            }
+
+            .teacher-card-opt.selected .selected-check {
+                display: block;
+            }
+
+            /* Top Anonymous Banner Element */
+            .anon-banner {
+                background: #f8fafc;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 16px;
+                margin-bottom: 24px;
+                transition: all 0.2s ease;
+            }
+
+                .anon-banner:has(input:checked) {
+                    background: #f0fdf4;
+                    border-color: #bbf7d0;
+                }
+
+            .anon-label {
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #1e293b;
+            }
+
+            .anon-text-container {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .anon-subtext {
+                font-size: 0.78rem;
+                color: #64748b;
+                font-weight: 400;
+            }
+
+            .anon-banner:has(input:checked) .anon-subtext {
+                color: #16a34a;
+            }
+
+            .anon-label input {
+                display: none;
+            }
+
+            .anon-box {
+                width: 20px;
+                height: 20px;
+                border: 2px solid #cbd5e1;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                background: white;
+                margin-top: 1px;
+                transition: all 0.2s;
+            }
+
+            .anon-label:has(input:checked) .anon-box {
+                background: #10b981;
+                border-color: #10b981;
+            }
+
+                .anon-label:has(input:checked) .anon-box::after {
+                    content: '✓';
+                    color: white;
+                    font-size: 0.8rem;
+                    font-weight: 800;
+                }
+
+            .spinner {
+                display: none;
+                width: 18px;
+                height: 18px;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-top-color: white;
+                border-radius: 50%;
+                animation: spin 0.6s linear infinite;
+            }
+
+            @@keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .btn-submit {
+                width: 100%;
+                margin-top: 8px;
+                padding: 14px;
+                background: #4f46e5;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 0.95rem;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                transition: all 0.15s ease;
+            }
+
+                .btn-submit:hover:not(:disabled) {
+                    background: #4338ca;
+                }
+
+                .btn-submit:disabled {
+                    background: #cbd5e1;
+                    color: #94a3b8;
+                    cursor: not-allowed;
+                }
+
+            @@media (max-width: 480px) {
+                .row2 {
+                    grid-template-columns: 1fr;
+                    gap: 0;
+                }
+
+                .rating-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+
+                .card-body {
+                    padding: 24px 20px;
+                }
+            }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+            <div class="icon-box">
+                <i class="fas fa-comment-alt"></i>
+            </div>
+            <p>Texas College of Management & IT</p>
+        </div>
+        <div class="card-body">
+
+            @if (ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="error-alert">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Please correct the errors below to submit your feedback.</span>
+                </div>
+            }
+
+            <!-- Step indicator -->
+            <div class="step-indicator">
+                <div class="step-dot active" id="dot1">1</div>
+                <div class="step-line" id="line1"></div>
+                <div class="step-dot" id="dot2">2</div>
+                <div class="step-line" id="line2"></div>
+                <div class="step-dot" id="dot3">3</div>
+                <div class="step-line" id="line3"></div>
+                <div class="step-dot" id="dot4">4</div>
+            </div>
+
+            <form asp-controller="Feedback" asp-action="SubmitFeedback" method="post" id="feedbackForm">
+                @Html.AntiForgeryToken()
+
+                <!-- [CHANGED] Anonymous Checkbox is now strictly at the top of the form -->
+                <div class="anon-banner">
+                    <label class="anon-label">
+                        <input asp-for="IsAnonymous" type="checkbox" id="anonCheckbox" onchange="toggleAnonymous()" />
+                        <span class="anon-box"></span>
+                        <div class="anon-text-container">
+                            <span>Submit Feedback Anonymously</span>
+                            <span class="anon-subtext" id="anonSubtext">Checking this hides your personal info fields entirely.</span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Step 1: Personal Info Wrapper -->
+                <div class="row2" id="personalInfoFields">
+                    <div class="field">
+                        <label class="field-title">Full Name <span class="req">*</span></label>
+                        <div class="inp">
+                            <i class="fas fa-user"></i>
+                            <input asp-for="StudentName" id="studentNameInput" placeholder="Your full name" required />
+                        </div>
+                        <span asp-validation-for="StudentName" class="field-err"></span>
+                    </div>
+                    <div class="field">
+                        <label class="field-title">LCID <span class="req">*</span></label>
+                        <div class="inp">
+                            <i class="fas fa-id-badge"></i>
+                            <input asp-for="LCID" id="lcidInput" placeholder="e.g. LC001234" required />
+                        </div>
+                        <span asp-validation-for="LCID" class="field-err"></span>
+                    </div>
+                </div>
+
+                <!-- Step 1: Semester Dropdown Selection -->
+                <div class="field">
+                    <label class="field-title">Semester <span class="req">*</span></label>
+                    <div class="inp no-icon">
+                        <select id="semesterSelect" onchange="loadSubjects()" required>
+                            <option value="">Select your semester</option>
+                            @foreach (var s in (ViewBag.Semesters as List<string> ?? new()))
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        </select>
+                    </div>
+                    <input type="hidden" asp-for="Semester" id="semesterHidden" />
+                </div>
+
+                <!-- Step 2: Subject Dropdown Selection -->
+                <div class="field" id="subjectField" style="display:none;">
+                    <label class="field-title">Subject / Professional Class <span class="req">*</span></label>
+                    <div class="inp no-icon">
+                        <select id="subjectSelect" onchange="loadProfessionalClass()" required>
+                            <option value="">Select subject</option>
+                        </select>
+                    </div>
+                    <input type="hidden" asp-for="Subject" id="subjectHidden" />
+                </div>
+
+                <!-- Step 3: Professional Class Optional Step Selection -->
+                <div class="field" id="proClassField" style="display:none;">
+                    <label class="field-title">Professional Class <span class="req">*</span></label>
+                    <div class="inp no-icon">
+                        <select id="proClassSelect" onchange="loadTeachers()" required>
+                            <option value="">Select class</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="proClassHidden" />
+                </div>
+
+                <!-- Step 3/4: Select Teacher Area -->
+                <div class="field" id="teacherField" style="display:none;">
+                    <label class="field-title">Select Teacher <span class="req">*</span></label>
+                    <div class="teacher-cards" id="teacherCards"></div>
+                    <input type="hidden" asp-for="TeacherId" id="teacherIdHidden" />
+                </div>
+
+                <!-- Step 4: Rating Buttons Grid Selection -->
+                <div class="field" id="ratingField" style="display:none;">
+                    <label class="field-title">Rating <span class="req">*</span></label>
+                    <div class="rating-grid">
+                        <button type="button" class="rating-btn" data-val="Excellent" onclick="selectRating('Excellent', this)">
+                            <i class="fas fa-star" style="color:#10b981; margin-bottom: 4px;"></i><br>Excellent
+                        </button>
+                        <button type="button" class="rating-btn" data-val="Good" onclick="selectRating('Good', this)">
+                            <i class="fas fa-thumbs-up" style="color:#3b82f6; margin-bottom: 4px;"></i><br>Good
+                        </button>
+                        <button type="button" class="rating-btn" data-val="Average" onclick="selectRating('Average', this)">
+                            <i class="fas fa-minus-circle" style="color:#f59e0b; margin-bottom: 4px;"></i><br>Average
+                        </button>
+                        <button type="button" class="rating-btn" data-val="Below Average" onclick="selectRating('Below Average', this)">
+                            <i class="fas fa-thumbs-down" style="color:#ef4444; margin-bottom: 4px;"></i><br>Below Avg
+                        </button>
+                    </div>
+                    <input type="hidden" asp-for="Rating" id="ratingHidden" />
+                    <span asp-validation-for="Rating" class="field-err"></span>
+                </div>
+
+                <!-- Step 4: Detailed Feedback Input Field -->
+                <div class="field" id="feedbackField" style="display:none;">
+                    <label class="field-title">Your Feedback <span class="req">*</span></label>
+                    <div class="inp no-icon">
+                        <textarea asp-for="FeedbackText" rows="4" placeholder="Share your constructive thoughts here..." required></textarea>
+                    </div>
+                    <span asp-validation-for="FeedbackText" class="field-err"></span>
+                </div>
+
+                <button type="submit" class="btn-submit" id="subBtn" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                    <span id="subTxt">Submit Feedback</span>
+                    <div class="spinner" id="subSpin"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+            // ── [NEW] Toggle Anonymous State ──
+            function toggleAnonymous() {
+                const isAnon = document.getElementById('anonCheckbox').checked;
+                const personalFields = document.getElementById('personalInfoFields');
+                const nameInput = document.getElementById('studentNameInput');
+                const lcidInput = document.getElementById('lcidInput');
+                const subtext = document.getElementById('anonSubtext');
+
+                if (isAnon) {
+                    personalFields.style.display = 'none';
+                    nameInput.required = false;
+                    lcidInput.required = false;
+                    nameInput.value = "Anonymous";
+                    lcidInput.value = "Anonymous";
+                    subtext.textContent = "Personal fields hidden. Your submission is entirely protected.";
+                } else {
+                    personalFields.style.display = 'grid';
+                    nameInput.required = true;
+                    lcidInput.required = true;
+                    nameInput.value = "";
+                    lcidInput.value = "";
+                    subtext.textContent = "Checking this hides your personal info fields entirely.";
+                }
+                checkReady();
+            }
+
+            // ── Step tracker ──
+            function updateSteps(step) {
+                for (let i = 1; i <= 4; i++) {
+                    const dot  = document.getElementById(`dot${i}`);
+                    const line = document.getElementById(`line${i}`);
+                    dot.classList.remove('active','done');
+                    if (line) line.classList.remove('done');
+
+                    if (i < step)  { dot.classList.add('done'); }
+                    if (i === step){ dot.classList.add('active'); }
+                    if (line && i < step) { line.classList.add('done'); }
+                }
+            }
+
+            // ── Step 1 → Load subjects by semester ──
+            async function loadSubjects() {
+                const sem = document.getElementById('semesterSelect').value;
+                document.getElementById('semesterHidden').value = sem;
+
+                ['subjectField','proClassField','teacherField', 'ratingField','feedbackField'].forEach(id => {
+                    document.getElementById(id).style.display = 'none';
+                });
+                document.getElementById('teacherIdHidden').value = '';
+                document.getElementById('ratingHidden').value    = '';
+                document.getElementById('subBtn').disabled       = true;
+                updateSteps(1);
+
+                if (!sem) return;
+
+                const res  = await fetch(`/Feedback/GetSubjectsBySemester?semester=${encodeURIComponent(sem)}`);
+                const data = await res.json();
+
+                const sel = document.getElementById('subjectSelect');
+                sel.innerHTML = '<option value="">Select subject</option>';
+
+                const seen = new Set();
+                data.forEach(t => {
+                    if (!seen.has(t.subject)) {
+                        seen.add(t.subject);
+                        sel.innerHTML += `<option value="${t.subject}">${t.subject}</option>`;
+                    }
+                });
+
+                document.getElementById('subjectField').style.display = 'block';
+                updateSteps(2);
+            }
+
+            // ── Step 2 → Load professional classes by subject ──
+            async function loadProfessionalClass() {
+                const sem  = document.getElementById('semesterHidden').value;
+                const subj = document.getElementById('subjectSelect').value;
+                document.getElementById('subjectHidden').value = subj;
+
+                ['proClassField','teacherField','ratingField', 'feedbackField'].forEach(id => {
+                    document.getElementById(id).style.display = 'none';
+                });
+                document.getElementById('teacherIdHidden').value = '';
+                document.getElementById('ratingHidden').value    = '';
+                document.getElementById('subBtn').disabled       = true;
+
+                if (!subj) return;
+
+                const res  = await fetch(`/Feedback/GetSubjectsBySemester?semester=${encodeURIComponent(sem)}`);
+                const data = await res.json();
+
+                const proClasses = data
+                    .filter(t => t.subject === subj && t.professionalClass)
+                    .map(t => t.professionalClass)
+                    .filter((v, i, a) => a.indexOf(v) === i);
+
+                if (proClasses.length > 0) {
+                    const sel = document.getElementById('proClassSelect');
+                    sel.innerHTML = '<option value="">Select class</option>';
+                    proClasses.forEach(pc => {
+                        sel.innerHTML += `<option value="${pc}">${pc}</option>`;
+                    });
+                    document.getElementById('proClassField').style.display = 'block';
+                    updateSteps(2);
+                } else {
+                    document.getElementById('proClassHidden').value = '';
+                    await loadTeachers();
+                }
+            }
+
+            // ── Step 3 → Load teachers ──
+            async function loadTeachers() {
+                const sem   = document.getElementById('semesterHidden').value;
+                const subj  = document.getElementById('subjectHidden').value;
+                const proSel = document.getElementById('proClassSelect');
+                const proClass = proSel?.value || document.getElementById('proClassHidden').value || '';
+
+                if (proSel?.value)
+                    document.getElementById('proClassHidden').value = proSel.value;
+
+                ['teacherField','ratingField','feedbackField'].forEach(id => {
+                    document.getElementById(id).style.display = 'none';
+                });
+                document.getElementById('teacherIdHidden').value = '';
+                document.getElementById('subBtn').disabled       = true;
+
+                const url = `/Feedback/GetTeachersBySubject` +
+                            `?semester=${encodeURIComponent(sem)}` +
+                            `&subject=${encodeURIComponent(subj)}` +
+                            `&professionalClass=${encodeURIComponent(proClass)}`;
+
+                const res     = await fetch(url);
+                const teachers = await res.json();
+
+                if (!teachers.length) return;
+
+                const container = document.getElementById('teacherCards');
+                container.innerHTML = '';
+
+                if (teachers.length === 1) {
+                    document.getElementById('teacherIdHidden').value = teachers[0].id;
+                    container.innerHTML = `
+                        <div class="teacher-card-opt selected">
+                            <div class="teacher-avatar-sm">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <div class="teacher-card-name">${teachers[0].fullName}</div>
+                                <div class="teacher-card-desig">${teachers[0].designation || 'Instructor'}</div>
+                            </div>
+                            <i class="fas fa-check-circle selected-check" style="display:block;"></i>
+                        </div>`;
+                    showRatingFields();
+                } else {
+                    teachers.forEach(t => {
+                        const card = document.createElement('div');
+                        card.className = 'teacher-card-opt';
+                        card.innerHTML = `
+                            <div class="teacher-avatar-sm">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <div class="teacher-card-name">${t.fullName}</div>
+                                <div class="teacher-card-desig">${t.designation || 'Teacher'}</div>
+                            </div>
+                            <i class="fas fa-check-circle selected-check"></i>`;
+                        card.onclick = () => selectTeacher(t.id, t.fullName, card);
+                        container.appendChild(card);
+                    });
+                }
+
+                document.getElementById('teacherField').style.display = 'block';
+                updateSteps(3);
+            }
+
+            function selectTeacher(id, name, cardEl) {
+                document.querySelectorAll('.teacher-card-opt').forEach(c => c.classList.remove('selected'));
+                cardEl.classList.add('selected');
+                document.getElementById('teacherIdHidden').value = id;
+                showRatingFields();
+            }
+
+            function showRatingFields() {
+                ['ratingField','feedbackField'].forEach(id => {
+                    document.getElementById(id).style.display = 'block';
+                });
+                updateSteps(4);
+                checkReady();
+            }
+
+            function selectRating(val, btn) {
+                document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('ratingHidden').value = val;
+                checkReady();
+            }
+
+            function checkReady() {
+                const isAnon = document.getElementById('anonCheckbox').checked;
+                const nameValid = isAnon || document.getElementById('studentNameInput').value.trim().length > 0;
+                const lcidValid = isAnon || document.getElementById('lcidInput').value.trim().length > 0;
+
+                const ready =
+                    nameValid &&
+                    lcidValid &&
+                    document.getElementById('semesterHidden').value &&
+                    document.getElementById('subjectHidden').value &&
+                    document.getElementById('teacherIdHidden').value &&
+                    document.getElementById('ratingHidden').value &&
+                    (document.getElementById('FeedbackText')?.value.trim().length ?? 0) > 5;
+
+                document.getElementById('subBtn').disabled = !ready;
+            }
+
+            document.getElementById('studentNameInput')?.addEventListener('input', checkReady);
+            document.getElementById('lcidInput')?.addEventListener('input', checkReady);
+            document.getElementById('FeedbackText')?.addEventListener('input', checkReady);
+
+            document.getElementById('feedbackForm').addEventListener('submit', function() {
+                document.getElementById('subBtn').disabled = true;
+                document.getElementById('subTxt').textContent = 'Submitting...';
+                document.getElementById('subSpin').style.display = 'inline-block';
+            });
+    </script>
+</body>
+</html>
