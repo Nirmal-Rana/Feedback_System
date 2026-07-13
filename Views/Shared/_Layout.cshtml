@@ -11,218 +11,243 @@
     @RenderSection("Styles", required: false)
 
     <style>
-        body { margin: 0; padding: 0; }
+            body {
+                margin: 0;
+                padding: 0;
+            }
 
-        .top-accent {
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2, #43e97b, #667eea);
-            background-size: 300% 100%;
-            animation: gradientShift 4s ease infinite;
-        }
+            .top-accent {
+                height: 4px;
+                background: linear-gradient(90deg, #667eea, #764ba2, #43e97b, #667eea);
+                background-size: 300% 100%;
+                animation: gradientShift 4s ease infinite;
+            }
 
-        @@keyframes gradientShift {
-            0%   { background-position: 0% 50%; }
-            50%  { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+            @@keyframes gradientShift {
+                0% {
+                    background-position: 0% 50%;
+                }
 
-        .main-navbar {
-            background: white;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid #f0f0f0;
-        }
+                50% {
+                    background-position: 100% 50%;
+                }
 
-        .navbar-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 30px;
-            height: 70px;
-        }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
 
-        .navbar-brand-custom {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            flex-shrink: 0;
-        }
+            .main-navbar {
+                background: white;
+                box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                border-bottom: 1px solid #f0f0f0;
+            }
 
-        .brand-logo-img {
-            height: 54px;
-            width: auto;
-            object-fit: contain;
-            border-radius: 6px;
-        }
+            .navbar-inner {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                max-width: 1280px;
+                margin: 0 auto;
+                padding: 0 30px;
+                height: 70px;
+            }
 
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-        }
+            .navbar-brand-custom {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                text-decoration: none;
+                flex-shrink: 0;
+            }
 
-        .brand-name {
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: #1a1a2e;
-            letter-spacing: 0.2px;
-        }
+            .brand-logo-img {
+                height: 54px;
+                width: auto;
+                object-fit: contain;
+                border-radius: 6px;
+            }
 
-        .brand-tagline {
-            font-size: 0.7rem;
-            color: #999;
-            font-weight: 500;
-        }
+            .brand-text {
+                display: flex;
+                flex-direction: column;
+                line-height: 1.2;
+            }
 
-        .navbar-links {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
+            .brand-name {
+                font-size: 0.95rem;
+                font-weight: 800;
+                color: #1a1a2e;
+                letter-spacing: 0.2px;
+            }
 
-        .navbar-links li a {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 0.88rem;
-            font-weight: 600;
-            color: #555;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
+            .brand-tagline {
+                font-size: 0.7rem;
+                color: #999;
+                font-weight: 500;
+            }
 
-        .navbar-links li a:hover {
-            background: #f4f4ff;
-            color: #667eea;
-            text-decoration: none;
-        }
+            .navbar-links {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
 
-        .navbar-links li a.active-link {
-            background: #f0f0ff;
-            color: #667eea;
-        }
+                .navbar-links li a {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 7px;
+                    padding: 8px 16px;
+                    border-radius: 10px;
+                    font-size: 0.88rem;
+                    font-weight: 600;
+                    color: #555;
+                    text-decoration: none;
+                    transition: all 0.2s ease;
+                }
 
-       .btn-login-nav {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    padding: 9px 22px !important;
-    background: #0f766e !important;
-    color: white !important;
-    border-radius: 10px !important;
-    font-weight: 700 !important;
-    font-size: 0.88rem !important;
-    border: 1.5px solid transparent !important;
-    box-shadow: 0 4px 14px rgba(15,118,110,0.35) !important;
-    transition: all 0.25s ease !important;
-    text-decoration: none !important;
-}
-.btn-login-nav:hover {
-    background: #0d9488 !important;
-    color: white !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(15,118,110,0.45) !important;
-    text-decoration: none !important;
-}
+                    .navbar-links li a:hover {
+                        background: #f4f4ff;
+                        color: #667eea;
+                        text-decoration: none;
+                    }
 
-        .nav-divider {
-            width: 1px;
-            height: 24px;
-            background: #eee;
-            margin: 0 8px;
-        }
+                    .navbar-links li a.active-link {
+                        background: #f0f0ff;
+                        color: #667eea;
+                    }
 
-        .mobile-toggle {
-            display: none;
-            background: none;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 7px 10px;
-            cursor: pointer;
-            color: #555;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
+            .btn-login-nav {
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                padding: 9px 22px !important;
+                background: #0f766e !important;
+                color: white !important;
+                border-radius: 10px !important;
+                font-weight: 700 !important;
+                font-size: 0.88rem !important;
+                border: 1.5px solid transparent !important;
+                box-shadow: 0 4px 14px rgba(15,118,110,0.35) !important;
+                transition: all 0.25s ease !important;
+                text-decoration: none !important;
+            }
 
-        .mobile-toggle:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
+                .btn-login-nav:hover {
+                    background: #0d9488 !important;
+                    color: white !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 22px rgba(15,118,110,0.45) !important;
+                    text-decoration: none !important;
+                }
 
-        .mobile-menu {
-            display: none;
-            background: white;
-            border-top: 1px solid #f0f0f0;
-            padding: 16px 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        }
+            .nav-divider {
+                width: 1px;
+                height: 24px;
+                background: #eee;
+                margin: 0 8px;
+            }
 
-        .mobile-menu.open { display: block; }
+            .mobile-toggle {
+                display: none;
+                background: none;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                padding: 7px 10px;
+                cursor: pointer;
+                color: #555;
+                font-size: 1rem;
+                transition: all 0.2s;
+            }
 
-        .mobile-menu ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+                .mobile-toggle:hover {
+                    border-color: #667eea;
+                    color: #667eea;
+                }
 
-        .mobile-menu ul li a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 11px 14px;
-            border-radius: 10px;
-            color: #555;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
+            .mobile-menu {
+                display: none;
+                background: white;
+                border-top: 1px solid #f0f0f0;
+                padding: 16px 20px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            }
 
-        .mobile-menu ul li a:hover {
-            background: #f4f4ff;
-            color: #667eea;
-        }
+                .mobile-menu.open {
+                    display: block;
+                }
 
-        .mobile-login {
-            margin-top: 10px;
-            display: flex;
-        }
+                .mobile-menu ul {
+                    list-style: none;
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
 
-        .mobile-login a {
-            flex: 1;
-            background: #1a1a2e;
-            color: white !important;
-            border-radius: 10px;
-            padding: 11px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            text-decoration: none;
-        }
+                    .mobile-menu ul li a {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        padding: 11px 14px;
+                        border-radius: 10px;
+                        color: #555;
+                        font-weight: 600;
+                        font-size: 0.9rem;
+                        text-decoration: none;
+                        transition: all 0.2s;
+                    }
 
-        .page-body { padding-top: 20px; }
+                        .mobile-menu ul li a:hover {
+                            background: #f4f4ff;
+                            color: #667eea;
+                        }
 
-        @@media (max-width: 768px) {
-            .navbar-links { display: none; }
-            .mobile-toggle { display: flex; align-items: center; }
-            .brand-tagline { display: none; }
-        }
+            .mobile-login {
+                margin-top: 10px;
+                display: flex;
+            }
+
+                .mobile-login a {
+                    flex: 1;
+                    background: #1a1a2e;
+                    color: white !important;
+                    border-radius: 10px;
+                    padding: 11px 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    font-weight: 700;
+                    font-size: 0.9rem;
+                    text-decoration: none;
+                }
+
+            .page-body {
+                padding-top: 20px;
+            }
+
+            @@media (max-width: 768px) {
+                .navbar-links {
+                    display: none;
+                }
+
+                .mobile-toggle {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .brand-tagline {
+                    display: none;
+                }
+            }
     </style>
 </head>
 <body>
@@ -232,30 +257,27 @@
     <nav class="main-navbar">
         <div class="navbar-inner">
 
-            <a class="navbar-brand-custom"
-               asp-area="" asp-controller="Home" asp-action="Index">
-                <img src="~/image/logo.png" alt="Texas College Logo"
-                     class="brand-logo-img" />
-               
+            <!-- Logo points to the external learning URL -->
+            <a class="navbar-brand-custom" href="https://learningtexas.com/">
+                <img src="~/image/logo.png" alt="Texas College Logo" class="brand-logo-img" />
             </a>
 
             <ul class="navbar-links">
                 <li>
-                    <a asp-area="" asp-controller="Home" asp-action="Index">
+                    <!-- Desktop Home link switched to external URL -->
+                    <a href="https://learningtexas.com/">
                         <i class="fas fa-home"></i> Home
                     </a>
                 </li>
                 <div class="nav-divider"></div>
                 <li>
-                    <a asp-area="" asp-controller="Admin" asp-action="Login"
-                       class="btn-login-nav">
+                    <a asp-area="" asp-controller="Admin" asp-action="Login" class="btn-login-nav">
                         <i class="fas fa-shield-alt"></i> Admin Login
                     </a>
                 </li>
             </ul>
 
-            <button class="mobile-toggle" id="mobileToggle"
-                    aria-label="Toggle navigation">
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation">
                 <i class="fas fa-bars" id="toggleIcon"></i>
             </button>
 
@@ -264,7 +286,8 @@
         <div class="mobile-menu" id="mobileMenu">
             <ul>
                 <li>
-                    <a asp-area="" asp-controller="Home" asp-action="Index">
+                    <!-- Mobile Home link switched to external URL -->
+                    <a href="https://learningtexas.com/">
                         <i class="fas fa-home"></i> Home
                     </a>
                 </li>
@@ -293,17 +316,17 @@
         const icon   = document.getElementById('toggleIcon');
 
         toggle.addEventListener('click', () => {
-            menu.classList.toggle('open');
-            icon.classList.toggle('fa-bars');
-            icon.classList.toggle('fa-times');
+        menu.classList.toggle('open');
+        icon.classList.toggle('fa-bars');
+        icon.classList.toggle('fa-times');
         });
 
         const currentPath = window.location.pathname;
         document.querySelectorAll('.navbar-links li a, .mobile-menu ul li a')
-            .forEach(link => {
-                if (link.getAttribute('href') === currentPath)
-                    link.classList.add('active-link');
-            });
+        .forEach(link => {
+        if (link.getAttribute('href') === currentPath)
+        link.classList.add('active-link');
+        });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
