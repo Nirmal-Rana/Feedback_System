@@ -122,7 +122,6 @@ namespace CollegeIssueManagement.Controllers
                 return RedirectToAction("SubmitFeedback");
             return View();
         }
-
         // ═══════════════════════════════════════
         // ADMIN — Dashboard
         // ═══════════════════════════════════════
@@ -133,42 +132,43 @@ namespace CollegeIssueManagement.Controllers
             string? semesterFilter,
             int page = 1)
         {
-            if (string.IsNullOrEmpty(
-                HttpContext.Session.GetString("FeedbackAdmin")))
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("FeedbackAdmin")))
                 return RedirectToAction("Login", "Admin");
 
             var today = DateTime.Today;
             var weekStart = today.AddDays(-(int)today.DayOfWeek);
             var monthStart = new DateTime(today.Year, today.Month, 1);
 
+            // 🔴 THE FIX: Base query that ONLY looks at feedbacks for ACTIVE teachers
+            var activeFeedbacksQuery = _context.TeacherFeedbacks
+                .Include(f => f.Teacher)
+                .Where(f => f.Teacher != null && f.Teacher.IsActive);
+
             // ── Stats ──
-            ViewBag.TotalCount = await _context.TeacherFeedbacks.CountAsync();
-            ViewBag.TodayCount = await _context.TeacherFeedbacks
+            ViewBag.TotalCount = await activeFeedbacksQuery.CountAsync();
+            ViewBag.TodayCount = await activeFeedbacksQuery
                 .CountAsync(f => f.SubmittedDate.Date == today);
-            ViewBag.WeekCount = await _context.TeacherFeedbacks
+            ViewBag.WeekCount = await activeFeedbacksQuery
                 .CountAsync(f => f.SubmittedDate.Date >= weekStart);
-            ViewBag.MonthCount = await _context.TeacherFeedbacks
+            ViewBag.MonthCount = await activeFeedbacksQuery
                 .CountAsync(f => f.SubmittedDate.Date >= monthStart);
-            ViewBag.PendingCount = await _context.TeacherFeedbacks
+            ViewBag.PendingCount = await activeFeedbacksQuery
                 .CountAsync(f => !f.IsReviewed);
 
             // ── Rating distribution ──
-            var allFeedbacks = await _context.TeacherFeedbacks.ToListAsync();
-            ViewBag.ExcellentCount = allFeedbacks
-                .Count(f => f.Rating == "Excellent");
-            ViewBag.GoodCount = allFeedbacks
-                .Count(f => f.Rating == "Good");
-            ViewBag.AverageCount = allFeedbacks
-                .Count(f => f.Rating == "Average");
-            ViewBag.BelowAvgCount = allFeedbacks
-                .Count(f => f.Rating == "Below Average");
+            var allFeedbacks = await activeFeedbacksQuery.ToListAsync();
+            ViewBag.ExcellentCount = allFeedbacks.Count(f => f.Rating == "Excellent");
+            ViewBag.GoodCount = allFeedbacks.Count(f => f.Rating == "Good");
+            ViewBag.AverageCount = allFeedbacks.Count(f => f.Rating == "Average");
+            ViewBag.BelowAvgCount = allFeedbacks.Count(f => f.Rating == "Below Average");
 
             // ── Teacher list for filter ──
             ViewBag.Teachers = await _context.Teachers
                 .Where(t => t.IsActive)
                 .OrderBy(t => t.FullName)
                 .ToListAsync();
-            ViewBag.Semesters = await _context.TeacherFeedbacks
+
+            ViewBag.Semesters = await activeFeedbacksQuery
                 .Select(f => f.Semester).Distinct().ToListAsync();
 
             // ── Per-teacher summary ──
@@ -180,32 +180,20 @@ namespace CollegeIssueManagement.Controllers
                     t.FullName,
                     t.Subject,
                     t.Semester,
-                    Total = _context.TeacherFeedbacks
-                                    .Count(f => f.TeacherId == t.Id),
-                    Excellent = _context.TeacherFeedbacks
-                                    .Count(f => f.TeacherId == t.Id &&
-                                                f.Rating == "Excellent"),
-                    Good = _context.TeacherFeedbacks
-                                    .Count(f => f.TeacherId == t.Id &&
-                                                f.Rating == "Good"),
-                    Average = _context.TeacherFeedbacks
-                                    .Count(f => f.TeacherId == t.Id &&
-                                                f.Rating == "Average"),
-                    BelowAvg = _context.TeacherFeedbacks
-                                    .Count(f => f.TeacherId == t.Id &&
-                                                f.Rating == "Below Average")
+                    Total = _context.TeacherFeedbacks.Count(f => f.TeacherId == t.Id),
+                    Excellent = _context.TeacherFeedbacks.Count(f => f.TeacherId == t.Id && f.Rating == "Excellent"),
+                    Good = _context.TeacherFeedbacks.Count(f => f.TeacherId == t.Id && f.Rating == "Good"),
+                    Average = _context.TeacherFeedbacks.Count(f => f.TeacherId == t.Id && f.Rating == "Average"),
+                    BelowAvg = _context.TeacherFeedbacks.Count(f => f.TeacherId == t.Id && f.Rating == "Below Average")
                 })
                 .ToListAsync();
 
             ViewBag.TeacherSummary = teacherSummary;
 
-            // ── Apply filters ──
-            var query = _context.TeacherFeedbacks
-                .Include(f => f.Teacher)
-                .AsQueryable();
+            // ── Apply filters to the table data ──
+            var query = activeFeedbacksQuery.AsQueryable(); 
 
-            if (!string.IsNullOrEmpty(teacherFilter) &&
-                int.TryParse(teacherFilter, out int tid))
+            if (!string.IsNullOrEmpty(teacherFilter) && int.TryParse(teacherFilter, out int tid))
                 query = query.Where(f => f.TeacherId == tid);
 
             if (!string.IsNullOrEmpty(ratingFilter))
@@ -223,8 +211,7 @@ namespace CollegeIssueManagement.Controllers
                 .ToListAsync();
 
             ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = (int)Math.Ceiling(
-                                         totalRecords / (double)pageSize);
+            ViewBag.TotalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
             ViewBag.TotalFiltered = totalRecords;
             ViewBag.TeacherFilter = teacherFilter;
             ViewBag.RatingFilter = ratingFilter;
@@ -232,7 +219,6 @@ namespace CollegeIssueManagement.Controllers
 
             return View(feedbacks);
         }
-
         // ── Individual teacher detail ──
         public async Task<IActionResult> TeacherDetail(int id)
         {
