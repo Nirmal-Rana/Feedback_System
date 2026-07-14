@@ -84,13 +84,13 @@ namespace CollegeIssueManagement.Controllers
             if (ModelState.IsValid)
             {
                 if ((model.Username ?? "").Trim() == "attendance" &&
-                    (model.Password ?? "").Trim() == "Texas@2026")
+                    (model.Password ?? "").Trim() == "Texas@2026#1")
                 {
                     HttpContext.Session.SetString("AttendanceAdmin", "true");
                     return RedirectToAction("AttendanceDashboard", "Attendance");
                 }
                 if ((model.Username ?? "").Trim() == "feedback" &&
-                    (model.Password ?? "").Trim() == "Feedback@2026")
+                    (model.Password ?? "").Trim() == "Feedback@2026@1991")
                 {
                     HttpContext.Session.SetString("FeedbackAdmin", "true");
                     return RedirectToAction("FeedbackDashboard", "Feedback");
