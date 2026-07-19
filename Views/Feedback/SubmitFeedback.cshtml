@@ -570,10 +570,10 @@
 
                 <!-- Step 3: Professional Class Optional Step Selection -->
                 <div class="field" id="proClassField" style="display:none;">
-                    <label class="field-title">Professional Class <span class="req">*</span></label>
+                    <label class="field-title">Section <span class="req">*</span></label>
                     <div class="inp no-icon">
                         <select id="proClassSelect" onchange="loadTeachers()" required>
-                            <option value="">Select class</option>
+                            <option value="">Select Section</option>
                         </select>
                     </div>
                     <input type="hidden" id="proClassHidden" />
@@ -724,7 +724,7 @@
 
                 if (proClasses.length > 0) {
                     const sel = document.getElementById('proClassSelect');
-                    sel.innerHTML = '<option value="">Select class</option>';
+                    sel.innerHTML = '<option value="">Select section</option>';
                     proClasses.forEach(pc => {
                         sel.innerHTML += `<option value="${pc}">${pc}</option>`;
                     });
