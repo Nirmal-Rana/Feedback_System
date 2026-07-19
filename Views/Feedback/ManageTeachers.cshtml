@@ -22,14 +22,18 @@
                 color: #0f172a;
             }
 
+            input[type="checkbox"] {
+                accent-color: #a855f7;
+            }
+
             .app-shell {
                 display: flex;
                 min-height: 100vh;
             }
 
             /* ══════════════════════════════
-                       SIDEBAR
-                    ══════════════════════════════ */
+                                               SIDEBAR
+                                            ══════════════════════════════ */
             .app-sidebar {
                 width: 220px;
                 background-color: #0a1628;
@@ -162,8 +166,8 @@
             }
 
             /* ══════════════════════════════
-                       MAIN AREA
-                    ══════════════════════════════ */
+                                               MAIN AREA
+                                            ══════════════════════════════ */
             .app-main {
                 flex: 1;
                 display: flex;
@@ -278,15 +282,27 @@
                 color: #b91c1c;
             }
 
-            /* ── Add Teacher Card ── */
-            .add-card {
-                background: white;
-                border-radius: 14px;
-                padding: 22px 24px;
-                border: 1px solid #e8edf5;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            /* ── Page actions bar (replaces the old always-visible add form) ── */
+            .page-actions-bar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
                 margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 12px;
             }
+
+                .page-actions-bar h1 {
+                    font-size: 1rem;
+                    font-weight: 700;
+                    color: #0f172a;
+                }
+
+                .page-actions-bar p {
+                    font-size: 0.8rem;
+                    color: #64748b;
+                    margin-top: 2px;
+                }
 
             .card-title {
                 font-size: 0.88rem;
@@ -295,7 +311,6 @@
                 display: flex;
                 align-items: center;
                 gap: 8px;
-                margin-bottom: 16px;
             }
 
                 .card-title i {
@@ -423,6 +438,7 @@
                 grid-column: span 2;
                 display: flex;
                 justify-content: flex-end;
+                gap: 10px;
                 margin-top: 8px;
             }
 
@@ -440,6 +456,11 @@
                 text-decoration: none;
                 transition: all 0.15s;
             }
+
+                .btn:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
 
             .btn-indigo {
                 background: linear-gradient(135deg, #e879f9, #a855f7);
@@ -474,6 +495,77 @@
                     background: #f8fafc;
                     color: #0f172a;
                 }
+
+            /* ── Add / Edit Teacher Modal ── */
+            .modal-backdrop {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.55);
+                z-index: 300;
+                align-items: flex-start;
+                justify-content: center;
+                padding: 46px 20px;
+                overflow-y: auto;
+            }
+
+                .modal-backdrop.show {
+                    display: flex;
+                }
+
+            .modal-panel {
+                background: white;
+                border-radius: 16px;
+                width: 100%;
+                max-width: 640px;
+                box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
+                overflow: hidden;
+                animation: modalPop 0.18s ease;
+            }
+
+            @@keyframes modalPop {
+                from {
+                    opacity: 0;
+                    transform: translateY(-8px) scale(0.98);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+
+            .modal-panel-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 18px 22px;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .modal-close-btn {
+                background: #f1f5f9;
+                border: none;
+                width: 30px;
+                height: 30px;
+                border-radius: 8px;
+                color: #64748b;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.15s;
+                flex-shrink: 0;
+            }
+
+                .modal-close-btn:hover {
+                    background: #e2e8f0;
+                    color: #0f172a;
+                }
+
+            .modal-panel form {
+                padding: 22px;
+            }
 
             /* ── Table Card ── */
             .table-card {
@@ -547,6 +639,11 @@
                 color: #64748b;
             }
 
+            #bulkDeleteBtn {
+                padding: 7px 14px;
+                font-size: 0.8rem;
+            }
+
             table {
                 width: 100%;
                 border-collapse: collapse;
@@ -612,7 +709,7 @@
             }
 
                 .table-responsive table {
-                    min-width: 800px;
+                    min-width: 850px;
                 }
 
             /* Footer */
@@ -704,7 +801,7 @@
         </aside>
 
         <!-- ══ MAIN ══ -->
-        <div class="app-main"> 
+        <div class="app-main">
 
             <!-- Top Bar -->
             <div class="app-topbar">
@@ -747,85 +844,15 @@
                         </div>
                     }
 
-                    <div class="add-card">
-                        <div class="card-title">
-                            <i class="fas fa-user-plus"></i>
-                            Add New Teacher
+                    <!-- [CHANGED] Add form is now a popup modal, triggered from here -->
+                    <div class="page-actions-bar">
+                        <div>
+                            <h1>Teachers</h1>
+                            <p>Add, edit, or remove instructors and their assigned subjects.</p>
                         </div>
-                        <form asp-controller="Feedback" asp-action="AddTeacher" method="post">
-                            @Html.AntiForgeryToken()
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label>Full Name *</label>
-                                    <input type="text" name="FullName" placeholder="Full Name" required />
-                                </div>
-                                <div class="form-group">
-                                    <label>Subject *</label>
-                                    <input type="text" name="Subject" placeholder="Subject" required />
-                                </div>
-
-                                <!-- Pop-up Semester Dropdown -->
-                                <div class="form-group">
-                                    <label>Semesters *</label>
-                                    <div class="custom-dropdown" id="semesterDropdown">
-                                        <button type="button" class="dropdown-btn" onclick="toggleDropdown('semesterDropdownOptions')">
-                                            <span class="btn-text">Select Semesters</span>
-                                            <i class="fas fa-chevron-down"></i>
-                                        </button>
-                                        <div class="dropdown-options" id="semesterDropdownOptions">
-                                            <label class="checkbox-label master-label">
-                                                <input type="checkbox" id="allSemesters" onchange="toggleSelectAll('semesterDropdownOptions', this)">
-                                                <strong>All Semesters</strong>
-                                            </label>
-                                            <hr class="dropdown-divider" />
-                                            <label class="checkbox-label"><input type="checkbox" name="Semesters" value="1st Semester" onchange="updateDropdownText('semesterDropdown')"> 1st Sem</label>
-                                            <label class="checkbox-label"><input type="checkbox" name="Semesters" value="2nd Semester" onchange="updateDropdownText('semesterDropdown')"> 2nd Sem</label>
-                                            <label class="checkbox-label"><input type="checkbox" name="Semesters" value="3rd Semester" onchange="updateDropdownText('semesterDropdown')"> 3rd Sem</label>
-                                            <label class="checkbox-label"><input type="checkbox" name="Semesters" value="4th Semester" onchange="updateDropdownText('semesterDropdown')"> 4th Sem</label>
-                                            <label class="checkbox-label"><input type="checkbox" name="Semesters" value="5th Semester" onchange="updateDropdownText('semesterDropdown')"> 5th Sem</label>
-                                            <label class="checkbox-label"><input type="checkbox" name="Semesters" value="6th Semester" onchange="updateDropdownText('semesterDropdown')"> 6th Sem</label>
-                                            <label class="checkbox-label"><input type="checkbox" name="Semesters" value="7th Semester" onchange="updateDropdownText('semesterDropdown')"> 7th Sem</label>
-                                            <label class="checkbox-label"><input type="checkbox" name="Semesters" value="8th Semester" onchange="updateDropdownText('semesterDropdown')"> 8th Sem</label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Pop-up Section Dropdown -->
-                                <div class="form-group">
-                                    <label>Sections *</label>
-                                    <div class="custom-dropdown" id="sectionDropdown">
-                                        <button type="button" class="dropdown-btn" onclick="toggleDropdown('sectionDropdownOptions')">
-                                            <span class="btn-text">Select Sections</span>
-                                            <i class="fas fa-chevron-down"></i>
-                                        </button>
-                                        <div class="dropdown-options" id="sectionDropdownOptions">
-                                            <label class="checkbox-label master-label">
-                                                <input type="checkbox" id="allSections" onchange="toggleSelectAll('sectionDropdownOptions', this)">
-                                                <strong>All Sections</strong>
-                                            </label>
-                                            <hr class="dropdown-divider" />
-                                            @foreach (var letter in new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' })
-                                            {
-                                                <label class="checkbox-label">
-                                                    <input type="checkbox" name="Sections" value="@letter" onchange="updateDropdownText('sectionDropdown')"> Section @letter
-                                                </label>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-group" style="grid-column: span 2;">
-                                    <label>Designation</label>
-                                    <input type="text" name="Designation" placeholder="Designation (e.g. Lecturer)" />
-                                </div>
-
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-indigo">
-                                        <i class="fas fa-plus"></i> Add Teacher
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+                        <button type="button" class="btn btn-indigo" onclick="openAddModal()">
+                            <i class="fas fa-user-plus"></i> Add New Teacher
+                        </button>
                     </div>
 
                     <div class="table-card">
@@ -835,6 +862,9 @@
                                 All Teachers
                             </h2>
                             <div class="table-controls">
+                                <button type="button" id="bulkDeleteBtn" class="btn btn-red" style="display:none;" onclick="bulkDeleteTeachers()">
+                                    <i class="fas fa-trash"></i> Delete Selected (<span id="selectedCount">0</span>)
+                                </button>
                                 <div class="search-wrapper">
                                     <i class="fas fa-search"></i>
                                     <input type="text" id="teacherSearch" class="search-input" placeholder="Search teacher name..." onkeyup="filterTeachers()" />
@@ -849,6 +879,9 @@
                                 <table id="teachersTable">
                                     <thead>
                                         <tr>
+                                            <th style="width:36px;">
+                                                <input type="checkbox" id="selectAllTeachers" onchange="toggleSelectAllTeachers(this)" />
+                                            </th>
                                             <th>#</th>
                                             <th>Name</th>
                                             <th>Subject</th>
@@ -862,10 +895,25 @@
                                     <tbody>
                                         @foreach (var t in Model)
                                         {
-                                            <tr class="teacher-row">
+                                            <tr class="teacher-row" data-id="@t.Id">
+                                                <td>
+                                                    <input type="checkbox" class="teacher-select-checkbox" value="@t.Id" onchange="updateBulkDeleteState()" />
+                                                </td>
                                                 <td style="color:#94a3b8;font-size:0.8rem;">@t.Id</td>
                                                 <td>
-                                                    <div class="teacher-name" style="font-weight:600;color:#0f172a;">@t.FullName</div>
+                                                    <div style="display:flex;align-items:center;gap:10px;">
+                                                        @if (!string.IsNullOrEmpty(t.PhotoPath))
+                                                        {
+                                                            <img src="@t.PhotoPath" alt="@t.FullName" style="width:34px;height:34px;border-radius:9px;object-fit:cover;flex-shrink:0;" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <div style="width:34px;height:34px;border-radius:9px;background:#f3e8ff;color:#a855f7;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;">
+                                                                <i class="fas fa-user"></i>
+                                                            </div>
+                                                        }
+                                                        <div class="teacher-name" style="font-weight:600;color:#0f172a;">@t.FullName</div>
+                                                    </div>
                                                 </td>
                                                 <td style="color:#475569;">@t.Subject</td>
                                                 <td>
@@ -884,6 +932,18 @@
                                                 </td>
                                                 <td>
                                                     <div style="display:flex;gap:8px;align-items:center;">
+                                                        <button type="button"
+                                                                class="btn btn-outline teacher-edit-btn"
+                                                                style="padding:5px 12px;font-size:0.78rem;"
+                                                                data-id="@t.Id"
+                                                                data-fullname="@t.FullName"
+                                                                data-subject="@t.Subject"
+                                                                data-semester="@t.Semester"
+                                                                data-section="@t.ProfessionalClass"
+                                                                data-designation="@t.Designation"
+                                                                data-photo="@t.PhotoPath">
+                                                            <i class="fas fa-pen"></i> Edit
+                                                        </button>
                                                         <a href="/Feedback/TeacherDetail/@t.Id" class="btn btn-outline" style="padding:5px 12px;font-size:0.78rem;">
                                                             <i class="fas fa-eye"></i> View
                                                         </a>
@@ -910,33 +970,143 @@
                                     No teachers added yet
                                 </p>
                                 <p style="font-size:0.82rem;margin-top:4px;">
-                                    Use the form above to add your first teacher
+                                    Use the "Add New Teacher" button above to add your first teacher
                                 </p>
                             </div>
                         }
                     </div>
 
-                </div><!-- /container -->
-            </div><!-- /app-content -->
+                </div>
+            </div>
             <!-- Footer -->
             <div class="app-footer">
                 <span>© 2026 Texas International College. All rights reserved.</span>
                 <span>Version 1.0.0</span>
             </div>
 
-        </div><!-- /app-main -->
-    </div><!-- /app-shell -->
-    <!-- Interactive Dropdown & Table Search Logic -->
+        </div>
+    </div>
+
+    <!-- ══ Add / Edit Teacher Modal ══ -->
+    <div class="modal-backdrop" id="teacherModalBackdrop" onclick="closeTeacherModalOnBackdrop(event)">
+        <div class="modal-panel">
+            <div class="modal-panel-header">
+                <div class="card-title">
+                    <i class="fas fa-user-plus" id="modalIcon"></i>
+                    <span id="modalTitleText">Add New Teacher</span>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeTeacherModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="teacherForm" asp-controller="Feedback" asp-action="AddTeacher" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="teacherIdField" value="0" />
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Teacher Photo</label>
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <div style="width:64px;height:64px;border-radius:12px;overflow:hidden;border:1px solid #cbd5e1;background:#f8fafc;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <img id="photoPreview" src="" alt="Preview" style="width:100%;height:100%;object-fit:cover;display:none;" />
+                                <i class="fas fa-user" id="photoPreviewIcon" style="color:#cbd5e1;font-size:1.6rem;"></i>
+                            </div>
+                            <div style="flex:1;">
+                                <input type="file" name="PhotoFile" id="photoFileInput" accept=".jpg,.jpeg,.png,.webp" onchange="previewPhoto(this)" />
+                                <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">JPG, PNG or WEBP. Max 3MB.</div>
+                                <div id="removePhotoWrap" style="display:none;margin-top:6px;">
+                                    <label style="font-size:0.78rem;color:#64748b;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                        <input type="checkbox" name="RemovePhoto" value="true" /> Remove current photo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" name="FullName" id="fullNameInput" placeholder="Full Name" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Subject *</label>
+                        <input type="text" name="Subject" id="subjectInput" placeholder="Subject" required />
+                    </div>
+
+                    <!-- Pop-up Semester Dropdown -->
+                    <div class="form-group">
+                        <label>Semesters *</label>
+                        <div class="custom-dropdown" id="semesterDropdown">
+                            <button type="button" class="dropdown-btn" onclick="toggleDropdown('semesterDropdownOptions')">
+                                <span class="btn-text">Select Semesters</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-options" id="semesterDropdownOptions">
+                                <label class="checkbox-label master-label">
+                                    <input type="checkbox" id="allSemesters" onchange="toggleSelectAll('semesterDropdownOptions', this)">
+                                    <strong>All Semesters</strong>
+                                </label>
+                                <hr class="dropdown-divider" />
+                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="1st Semester" onchange="updateDropdownText('semesterDropdown')"> 1st Sem</label>
+                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="2nd Semester" onchange="updateDropdownText('semesterDropdown')"> 2nd Sem</label>
+                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="3rd Semester" onchange="updateDropdownText('semesterDropdown')"> 3rd Sem</label>
+                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="4th Semester" onchange="updateDropdownText('semesterDropdown')"> 4th Sem</label>
+                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="5th Semester" onchange="updateDropdownText('semesterDropdown')"> 5th Sem</label>
+                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="6th Semester" onchange="updateDropdownText('semesterDropdown')"> 6th Sem</label>
+                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="7th Semester" onchange="updateDropdownText('semesterDropdown')"> 7th Sem</label>
+                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="8th Semester" onchange="updateDropdownText('semesterDropdown')"> 8th Sem</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pop-up Section Dropdown -->
+                    <div class="form-group">
+                        <label>Sections *</label>
+                        <div class="custom-dropdown" id="sectionDropdown">
+                            <button type="button" class="dropdown-btn" onclick="toggleDropdown('sectionDropdownOptions')">
+                                <span class="btn-text">Select Sections</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-options" id="sectionDropdownOptions">
+                                <label class="checkbox-label master-label">
+                                    <input type="checkbox" id="allSections" onchange="toggleSelectAll('sectionDropdownOptions', this)">
+                                    <strong>All Sections</strong>
+                                </label>
+                                <hr class="dropdown-divider" />
+                                @foreach (var letter in new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' })
+                                {
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="Sections" value="@letter" onchange="updateDropdownText('sectionDropdown')"> Section @letter
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Designation</label>
+                        <input type="text" name="Designation" id="designationInput" placeholder="Designation (e.g. Lecturer)" />
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeTeacherModal()">Cancel</button>
+                        <button type="submit" class="btn btn-indigo">
+                            <i class="fas fa-plus" id="submitBtnIcon"></i>
+                            <span id="submitBtnText">Add Teacher</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-            // Toggle specific custom dropdown display
+            // ══ Dropdown / multi-select handling ══
             function toggleDropdown(id) {
                 document.querySelectorAll('.dropdown-options').forEach(el => {
                     if (el.id !== id) el.classList.remove('show');
                 });
                 document.getElementById(id).classList.toggle('show');
             }
-
-            // Close UI windows automatically when user clicks anywhere outside
             window.onclick = function(event) {
                 if (!event.target.closest('.custom-dropdown')) {
                     document.querySelectorAll('.dropdown-options').forEach(el => {
@@ -945,7 +1115,6 @@
                 }
             }
 
-            // Handles the "All" options check toggle state changes
             function toggleSelectAll(containerId, masterCheckbox) {
                 const container = document.getElementById(containerId);
                 const checkboxes = container.querySelectorAll('input[type="checkbox"]:not(.master-label input)');
@@ -980,6 +1149,194 @@
                 }
             }
 
+            // ══ Photo preview ══
+            function previewPhoto(input) {
+                const preview = document.getElementById('photoPreview');
+                const icon = document.getElementById('photoPreviewIcon');
+                if (input.files && input.files[0]) {
+                    preview.src = URL.createObjectURL(input.files[0]);
+                    preview.style.display = 'block';
+                    icon.style.display = 'none';
+                }
+            }
+
+            function resetPhotoPreview() {
+                const preview = document.getElementById('photoPreview');
+                const icon = document.getElementById('photoPreviewIcon');
+                preview.src = '';
+                preview.style.display = 'none';
+                icon.style.display = 'inline-block';
+            }
+
+            // ══ Add / Edit Teacher modal ══
+            function openTeacherModal() {
+                document.getElementById('teacherModalBackdrop').classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeTeacherModal() {
+                document.getElementById('teacherModalBackdrop').classList.remove('show');
+                document.body.style.overflow = '';
+            }
+
+            function closeTeacherModalOnBackdrop(evt) {
+                if (evt.target.id === 'teacherModalBackdrop') closeTeacherModal();
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeTeacherModal();
+            });
+
+            function resetTeacherFormSelections() {
+                document.querySelectorAll('#semesterDropdownOptions input[type="checkbox"], #sectionDropdownOptions input[type="checkbox"]')
+                    .forEach(cb => cb.checked = false);
+                updateDropdownText('semesterDropdown');
+                updateDropdownText('sectionDropdown');
+            }
+
+            function openAddModal() {
+                document.getElementById('modalTitleText').textContent = 'Add New Teacher';
+                document.getElementById('modalIcon').className = 'fas fa-user-plus';
+                document.getElementById('submitBtnIcon').className = 'fas fa-plus';
+                document.getElementById('submitBtnText').textContent = 'Add Teacher';
+                document.getElementById('teacherForm').setAttribute('action', '/Feedback/AddTeacher');
+                document.getElementById('teacherIdField').value = '0';
+
+                document.getElementById('fullNameInput').value = '';
+                document.getElementById('subjectInput').value = '';
+                document.getElementById('designationInput').value = '';
+                document.getElementById('photoFileInput').value = '';
+                document.getElementById('removePhotoWrap').style.display = 'none';
+                resetPhotoPreview();
+                resetTeacherFormSelections();
+
+                openTeacherModal();
+            }
+
+            function openEditModal(data) {
+                document.getElementById('modalTitleText').textContent = 'Edit Teacher';
+                document.getElementById('modalIcon').className = 'fas fa-user-edit';
+                document.getElementById('submitBtnIcon').className = 'fas fa-save';
+                document.getElementById('submitBtnText').textContent = 'Save Changes';
+                document.getElementById('teacherForm').setAttribute('action', '/Feedback/EditTeacher');
+                document.getElementById('teacherIdField').value = data.id;
+
+                document.getElementById('fullNameInput').value = data.fullName || '';
+                document.getElementById('subjectInput').value = data.subject || '';
+                document.getElementById('designationInput').value = data.designation || '';
+
+                document.getElementById('photoFileInput').value = '';
+                if (data.photoPath) {
+                    const preview = document.getElementById('photoPreview');
+                    const icon = document.getElementById('photoPreviewIcon');
+                    preview.src = data.photoPath;
+                    preview.style.display = 'block';
+                    icon.style.display = 'none';
+                    document.getElementById('removePhotoWrap').style.display = 'block';
+                } else {
+                    resetPhotoPreview();
+                    document.getElementById('removePhotoWrap').style.display = 'none';
+                }
+
+                const semesterValues = (data.semester || '').split(',').map(s => s.trim()).filter(Boolean);
+                document.querySelectorAll('#semesterDropdownOptions input[name="Semesters"]').forEach(cb => {
+                    cb.checked = semesterValues.includes(cb.value);
+                });
+                updateDropdownText('semesterDropdown');
+
+                const sectionValues = (data.section || '').split(',').map(s => s.trim()).filter(Boolean);
+                document.querySelectorAll('#sectionDropdownOptions input[name="Sections"]').forEach(cb => {
+                    cb.checked = sectionValues.includes(cb.value);
+                });
+                updateDropdownText('sectionDropdown');
+
+                openTeacherModal();
+            }
+
+            document.querySelectorAll('.teacher-edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    openEditModal({
+                        id: this.dataset.id,
+                        fullName: this.dataset.fullname,
+                        subject: this.dataset.subject,
+                        semester: this.dataset.semester,
+                        section: this.dataset.section,
+                        designation: this.dataset.designation,
+                        photoPath: this.dataset.photo
+                    });
+                });
+            });
+
+          
+            @if (TempData["Error"] != null)
+                {
+                    <text>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                openAddModal();
+                                                        });
+                    </text>
+            }
+
+                // ══ Bulk selection & delete ══
+                function toggleSelectAllTeachers(masterCb) {
+                    document.querySelectorAll('.teacher-select-checkbox').forEach(cb => {
+                        if (cb.closest('.teacher-row').style.display !== 'none') {
+                            cb.checked = masterCb.checked;
+                        }
+                    });
+                    updateBulkDeleteState();
+                }
+
+            function updateBulkDeleteState() {
+                const allBoxes = Array.from(document.querySelectorAll('.teacher-select-checkbox'));
+                const visibleBoxes = allBoxes.filter(cb => cb.closest('.teacher-row').style.display !== 'none');
+                const checked = allBoxes.filter(cb => cb.checked);
+
+                document.getElementById('selectedCount').textContent = checked.length;
+                document.getElementById('bulkDeleteBtn').style.display = checked.length > 0 ? 'inline-flex' : 'none';
+
+                const selectAll = document.getElementById('selectAllTeachers');
+                if (selectAll) {
+                    selectAll.checked = visibleBoxes.length > 0 && visibleBoxes.every(cb => cb.checked);
+                }
+            }
+
+            async function bulkDeleteTeachers() {
+                const checked = Array.from(document.querySelectorAll('.teacher-select-checkbox:checked')).map(cb => parseInt(cb.value));
+                if (checked.length === 0) return;
+
+                if (!confirm(`Remove ${checked.length} teacher${checked.length !== 1 ? 's' : ''} from the system? This cannot be undone.`)) return;
+
+                const btn = document.getElementById('bulkDeleteBtn');
+                btn.disabled = true;
+
+                try {
+                    const res = await fetch('/Feedback/BulkDeleteTeachers', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(checked)
+                    });
+
+                    if (res.ok) {
+                        checked.forEach(id => {
+                            const row = document.querySelector(`.teacher-row[data-id="${id}"]`);
+                            if (row) row.remove();
+                        });
+                        filterTeachers();
+                        updateBulkDeleteState();
+                    } else if (res.status === 401) {
+                        alert('Your session has expired. Please log in again.');
+                        window.location.href = '/Admin/Login';
+                    } else {
+                        alert('Something went wrong while deleting. Please try again.');
+                    }
+                } catch (err) {
+                    alert('Network error. Please try again.');
+                } finally {
+                    btn.disabled = false;
+                }
+            }
+
             // Client-side quick filter logic
             function filterTeachers() {
                 var input = document.getElementById("teacherSearch");
@@ -999,12 +1356,15 @@
                             visibleCount++;
                         } else {
                             rows[i].style.display = "none";
+                            var cb = rows[i].querySelector('.teacher-select-checkbox');
+                            if (cb) cb.checked = false;
                         }
                     }
                 }
 
                 var counter = document.getElementById("teacherCount");
                 counter.innerText = visibleCount + " teacher" + (visibleCount !== 1 ? "s" : "") + " found";
+                updateBulkDeleteState();
             }
     </script>
 </body>

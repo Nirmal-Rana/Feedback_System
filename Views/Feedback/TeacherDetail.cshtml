@@ -8,6 +8,7 @@
     int goodCount = ViewBag.GoodCount ?? 0;
     int averageCount = ViewBag.AverageCount ?? 0;
     int belowAvgCount = ViewBag.BelowAvgCount ?? 0;
+    string? teacherPhoto = ViewBag.TeacherPhoto as string;
 
     // Calculate percentage breakdown for the visual graphs
     double excPct = totalCount > 0 ? Math.Round((double)excellentCount / totalCount * 100) : 0;
@@ -41,8 +42,8 @@
             }
 
             /* ══════════════════════════════
-                         SIDEBAR — matches ManageTeachers
-                      ══════════════════════════════ */
+                                     SIDEBAR — matches ManageTeachers
+                                  ══════════════════════════════ */
             .app-sidebar {
                 width: 220px;
                 background-color: #0a1628;
@@ -254,6 +255,8 @@
                 justify-content: center;
                 color: white;
                 font-size: 1.6rem;
+                overflow: hidden;
+                flex-shrink: 0;
             }
 
             .profile-name {
@@ -557,9 +560,18 @@
                     <!-- ── Teacher Info Header Banner ── -->
                     <div class="profile-banner">
                         <div class="profile-info">
-                            <div class="profile-avatar">
-                                <i class="fas fa-user-tie"></i>
-                            </div>
+                            @if (!string.IsNullOrEmpty(teacherPhoto))
+                            {
+                                <div class="profile-avatar">
+                                    <img src="@teacherPhoto" alt="@ViewBag.TeacherName" style="width:100%;height:100%;object-fit:cover;" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="profile-avatar">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                            }
                             <div>
                                 <h1 class="profile-name">@ViewBag.TeacherName</h1>
                                 <div class="profile-meta">

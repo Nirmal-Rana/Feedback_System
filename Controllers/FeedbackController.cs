@@ -13,13 +13,61 @@ namespace CollegeIssueManagement.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<FeedbackController> _logger;
+        private readonly IWebHostEnvironment _env;
+
+        private static readonly string[] AllowedPhotoExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
+        private const long MaxPhotoBytes = 3 * 1024 * 1024; // 3 MB
 
         public FeedbackController(
             ApplicationDbContext context,
-            ILogger<FeedbackController> logger)
+            ILogger<FeedbackController> logger,
+            IWebHostEnvironment env)
         {
             _context = context;
             _logger = logger;
+            _env = env;
+        }
+
+        // ═══════════════════════════════════════
+        // Photo upload helpers
+        // ═══════════════════════════════════════
+
+        private async Task<(bool Success, string? RelativePath, string? Error)> SaveTeacherPhotoAsync(IFormFile file)
+        {
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!AllowedPhotoExtensions.Contains(ext))
+                return (false, null, "Photo must be a JPG, PNG, or WEBP file.");
+
+            if (file.Length > MaxPhotoBytes)
+                return (false, null, "Photo must be smaller than 3 MB.");
+
+            var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "teachers");
+            Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = $"{Guid.NewGuid():N}{ext}";
+            var fullPath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return (true, $"/uploads/teachers/{fileName}", null);
+        }
+
+        private void DeleteTeacherPhoto(string? relativePath)
+        {
+            if (string.IsNullOrWhiteSpace(relativePath)) return;
+
+            var fullPath = Path.Combine(
+                _env.WebRootPath,
+                relativePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+
+            if (System.IO.File.Exists(fullPath))
+            {
+                try { System.IO.File.Delete(fullPath); }
+                catch (Exception ex) { _logger.LogWarning(ex, "Could not delete old teacher photo: {Path}", fullPath); }
+            }
         }
 
         // ═══════════════════════════════════════
@@ -198,6 +246,7 @@ namespace CollegeIssueManagement.Controllers
                     t.FullName,
                     t.Subject,
                     t.Semester,
+                    t.PhotoPath,
                     Total = _context.TeacherFeedbacks.Count(f => f.TeacherId == t.Id),
                     Excellent = _context.TeacherFeedbacks.Count(f => f.TeacherId == t.Id && f.Rating == "Excellent"),
                     Good = _context.TeacherFeedbacks.Count(f => f.TeacherId == t.Id && f.Rating == "Good"),
@@ -250,6 +299,7 @@ namespace CollegeIssueManagement.Controllers
             ViewBag.TeacherName = teacher.FullName;
             ViewBag.Subject = teacher.Subject;
             ViewBag.Semester = teacher.Semester;
+            ViewBag.TeacherPhoto = teacher.PhotoPath;
 
             var feedbacks = await _context.TeacherFeedbacks
                                           .Where(f => f.TeacherId == id)
@@ -271,10 +321,12 @@ namespace CollegeIssueManagement.Controllers
             return View(feedbacks);
         }
 
-        // ── Add Teacher (Updated to accept arrays for Multi-Selection) ──
+        // ── Add Teacher (accepts arrays for Multi-Selection + optional photo) ──
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddTeacher(string FullName, string Subject, string[] Semesters, string[] Sections, string Designation)
+        public async Task<IActionResult> AddTeacher(
+            string FullName, string Subject, string[] Semesters, string[] Sections,
+            string Designation, IFormFile? PhotoFile)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("FeedbackAdmin")))
                 return RedirectToAction("Login", "Admin");
@@ -295,6 +347,18 @@ namespace CollegeIssueManagement.Controllers
 
             try
             {
+                string? photoPath = null;
+                if (PhotoFile != null && PhotoFile.Length > 0)
+                {
+                    var (success, relPath, error) = await SaveTeacherPhotoAsync(PhotoFile);
+                    if (!success)
+                    {
+                        TempData["Error"] = error;
+                        return RedirectToAction("ManageTeachers");
+                    }
+                    photoPath = relPath;
+                }
+
                 // Join array lists into persistent comma-separated strings
                 string combinedSemesters = string.Join(", ", Semesters);
                 string combinedSections = string.Join(", ", Sections);
@@ -306,6 +370,7 @@ namespace CollegeIssueManagement.Controllers
                     Semester = combinedSemesters, // Holds data like: "1st Semester, 2nd Semester"
                     ProfessionalClass = combinedSections, // Holds mapped sections: "A, B"
                     Designation = string.IsNullOrWhiteSpace(Designation) ? "Lecturer" : Designation.Trim(),
+                    PhotoPath = photoPath,
                     CreatedAt = DateTime.Now,
                     IsActive = true
                 };
@@ -324,6 +389,77 @@ namespace CollegeIssueManagement.Controllers
             return RedirectToAction("ManageTeachers");
         }
 
+        // ── Edit Teacher (mirrors AddTeacher; updates an existing record in place) ──
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditTeacher(
+            int Id, string FullName, string Subject, string[] Semesters, string[] Sections,
+            string Designation, IFormFile? PhotoFile, bool RemovePhoto = false)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("FeedbackAdmin")))
+                return RedirectToAction("Login", "Admin");
+
+            // Validate Text Fields Manually to bypass standard model validation state errors
+            if (string.IsNullOrWhiteSpace(FullName) || string.IsNullOrWhiteSpace(Subject))
+            {
+                TempData["Error"] = "Full Name and Subject are required fields.";
+                return RedirectToAction("ManageTeachers");
+            }
+
+            // Ensure selection choices are sent correctly
+            if (Semesters == null || Semesters.Length == 0 || Sections == null || Sections.Length == 0)
+            {
+                TempData["Error"] = "Please select at least one Semester and one Section.";
+                return RedirectToAction("ManageTeachers");
+            }
+
+            try
+            {
+                var teacher = await _context.Teachers.FindAsync(Id);
+                if (teacher == null || !teacher.IsActive)
+                {
+                    TempData["Error"] = "Teacher not found.";
+                    return RedirectToAction("ManageTeachers");
+                }
+
+                // Join array lists into persistent comma-separated strings
+                teacher.FullName = FullName.Trim();
+                teacher.Subject = Subject.Trim();
+                teacher.Semester = string.Join(", ", Semesters);          // Holds data like: "1st Semester, 2nd Semester"
+                teacher.ProfessionalClass = string.Join(", ", Sections);  // Holds mapped sections: "A, B"
+                teacher.Designation = string.IsNullOrWhiteSpace(Designation) ? "Lecturer" : Designation.Trim();
+
+                if (PhotoFile != null && PhotoFile.Length > 0)
+                {
+                    var (success, relPath, error) = await SaveTeacherPhotoAsync(PhotoFile);
+                    if (!success)
+                    {
+                        TempData["Error"] = error;
+                        return RedirectToAction("ManageTeachers");
+                    }
+
+                    DeleteTeacherPhoto(teacher.PhotoPath); // remove old file
+                    teacher.PhotoPath = relPath;
+                }
+                else if (RemovePhoto)
+                {
+                    DeleteTeacherPhoto(teacher.PhotoPath);
+                    teacher.PhotoPath = null;
+                }
+
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Teacher {teacher.FullName} updated successfully!";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while executing EditTeacher");
+                TempData["Error"] = "An error occurred while saving: " + ex.Message;
+            }
+
+            return RedirectToAction("ManageTeachers");
+        }
+
         // ── Delete Teacher ──
         [HttpPost]
         public async Task<IActionResult> DeleteTeacher(int id)
@@ -334,12 +470,35 @@ namespace CollegeIssueManagement.Controllers
             var teacher = await _context.Teachers.FindAsync(id);
             if (teacher != null)
             {
-                teacher.IsActive = false; // Soft delete
+                teacher.IsActive = false; // Soft delete — photo file kept in case of restore
                 await _context.SaveChangesAsync();
             }
 
             TempData["Success"] = "Teacher removed successfully.";
             return RedirectToAction("ManageTeachers");
+        }
+
+        // ── Bulk delete teachers (soft delete, same semantics as single DeleteTeacher) ──
+        [HttpPost]
+        public async Task<IActionResult> BulkDeleteTeachers([FromBody] List<int> ids)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("FeedbackAdmin")))
+                return Unauthorized();
+
+            if (ids == null || !ids.Any()) return BadRequest();
+
+            var teachers = await _context.Teachers
+                .Where(t => ids.Contains(t.Id) && t.IsActive)
+                .ToListAsync();
+
+            foreach (var teacher in teachers)
+            {
+                teacher.IsActive = false; // Soft delete
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { deleted = teachers.Count });
         }
 
         // ── Manage Teachers page ──
