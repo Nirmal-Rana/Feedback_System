@@ -14,8 +14,6 @@ namespace CollegeIssueManagement.Models.ViewModels
 
         public string? PreferredDuration { get; set; }
 
-        
-        [Required(ErrorMessage = "Please upload your CV.")]
         public IFormFile CVFile { get; set; } = null!;
 
         public string? Skills { get; set; }

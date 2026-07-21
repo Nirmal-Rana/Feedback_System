@@ -576,7 +576,8 @@
                             <option value="">Select Section</option>
                         </select>
                     </div>
-                    <input type="hidden" id="proClassHidden" />
+                    <!-- CHANGED: added name="Section" so this actually posts and binds to TeacherFeedback.Section -->
+                    <input type="hidden" asp-for="Section" id="proClassHidden" />
                 </div>
 
                 <!-- Step 3/4: Select Teacher Area -->
@@ -655,13 +656,13 @@
             // ── Step tracker ──
             function updateSteps(step) {
                 for (let i = 1; i <= 4; i++) {
-                    const dot  = document.getElementById(`dot${i}`);
+                    const dot = document.getElementById(`dot${i}`);
                     const line = document.getElementById(`line${i}`);
-                    dot.classList.remove('active','done');
+                    dot.classList.remove('active', 'done');
                     if (line) line.classList.remove('done');
 
-                    if (i < step)  { dot.classList.add('done'); }
-                    if (i === step){ dot.classList.add('active'); }
+                    if (i < step) { dot.classList.add('done'); }
+                    if (i === step) { dot.classList.add('active'); }
                     if (line && i < step) { line.classList.add('done'); }
                 }
             }
@@ -671,17 +672,17 @@
                 const sem = document.getElementById('semesterSelect').value;
                 document.getElementById('semesterHidden').value = sem;
 
-                ['subjectField','proClassField','teacherField', 'ratingField','feedbackField'].forEach(id => {
+                ['subjectField', 'proClassField', 'teacherField', 'ratingField', 'feedbackField'].forEach(id => {
                     document.getElementById(id).style.display = 'none';
                 });
                 document.getElementById('teacherIdHidden').value = '';
-                document.getElementById('ratingHidden').value    = '';
-                document.getElementById('subBtn').disabled       = true;
+                document.getElementById('ratingHidden').value = '';
+                document.getElementById('subBtn').disabled = true;
                 updateSteps(1);
 
                 if (!sem) return;
 
-                const res  = await fetch(`/Feedback/GetSubjectsBySemester?semester=${encodeURIComponent(sem)}`);
+                const res = await fetch(`/Feedback/GetSubjectsBySemester?semester=${encodeURIComponent(sem)}`);
                 const data = await res.json();
 
                 const sel = document.getElementById('subjectSelect');
@@ -701,25 +702,26 @@
 
             // ── Step 2 → Load professional classes by subject ──
             async function loadProfessionalClass() {
-                const sem  = document.getElementById('semesterHidden').value;
+                const sem = document.getElementById('semesterHidden').value;
                 const subj = document.getElementById('subjectSelect').value;
                 document.getElementById('subjectHidden').value = subj;
 
-                ['proClassField','teacherField','ratingField', 'feedbackField'].forEach(id => {
+                ['proClassField', 'teacherField', 'ratingField', 'feedbackField'].forEach(id => {
                     document.getElementById(id).style.display = 'none';
                 });
                 document.getElementById('teacherIdHidden').value = '';
-                document.getElementById('ratingHidden').value    = '';
-                document.getElementById('subBtn').disabled       = true;
+                document.getElementById('ratingHidden').value = '';
+                document.getElementById('subBtn').disabled = true;
 
                 if (!subj) return;
 
-                const res  = await fetch(`/Feedback/GetSubjectsBySemester?semester=${encodeURIComponent(sem)}`);
+                const res = await fetch(`/Feedback/GetSubjectsBySemester?semester=${encodeURIComponent(sem)}`);
                 const data = await res.json();
 
+                // CHANGED: read t.section (was t.professionalClass) — matches the controller's current JSON output
                 const proClasses = data
-                    .filter(t => t.subject === subj && t.professionalClass)
-                    .map(t => t.professionalClass)
+                    .filter(t => t.subject === subj && t.section)
+                    .map(t => t.section)
                     .filter((v, i, a) => a.indexOf(v) === i);
 
                 if (proClasses.length > 0) {
@@ -738,26 +740,27 @@
 
             // ── Step 3 → Load teachers ──
             async function loadTeachers() {
-                const sem   = document.getElementById('semesterHidden').value;
-                const subj  = document.getElementById('subjectHidden').value;
+                const sem = document.getElementById('semesterHidden').value;
+                const subj = document.getElementById('subjectHidden').value;
                 const proSel = document.getElementById('proClassSelect');
                 const proClass = proSel?.value || document.getElementById('proClassHidden').value || '';
 
                 if (proSel?.value)
                     document.getElementById('proClassHidden').value = proSel.value;
 
-                ['teacherField','ratingField','feedbackField'].forEach(id => {
+                ['teacherField', 'ratingField', 'feedbackField'].forEach(id => {
                     document.getElementById(id).style.display = 'none';
                 });
                 document.getElementById('teacherIdHidden').value = '';
-                document.getElementById('subBtn').disabled       = true;
+                document.getElementById('subBtn').disabled = true;
 
+                // CHANGED: param name section (was professionalClass) — matches controller's GetTeachersBySubject signature
                 const url = `/Feedback/GetTeachersBySubject` +
-                            `?semester=${encodeURIComponent(sem)}` +
-                            `&subject=${encodeURIComponent(subj)}` +
-                            `&professionalClass=${encodeURIComponent(proClass)}`;
+                    `?semester=${encodeURIComponent(sem)}` +
+                    `&subject=${encodeURIComponent(subj)}` +
+                    `&section=${encodeURIComponent(proClass)}`;
 
-                const res     = await fetch(url);
+                const res = await fetch(url);
                 const teachers = await res.json();
 
                 if (!teachers.length) return;
@@ -768,30 +771,30 @@
                 if (teachers.length === 1) {
                     document.getElementById('teacherIdHidden').value = teachers[0].id;
                     container.innerHTML = `
-                        <div class="teacher-card-opt selected">
-                            <div class="teacher-avatar-sm">
-                                <i class="fas fa-user-tie"></i>
-                            </div>
-                            <div>
-                                <div class="teacher-card-name">${teachers[0].fullName}</div>
-                                <div class="teacher-card-desig">${teachers[0].designation || 'Instructor'}</div>
-                            </div>
-                            <i class="fas fa-check-circle selected-check" style="display:block;"></i>
-                        </div>`;
+                                    <div class="teacher-card-opt selected">
+                                        <div class="teacher-avatar-sm">
+                                            <i class="fas fa-user-tie"></i>
+                                        </div>
+                                        <div>
+                                            <div class="teacher-card-name">${teachers[0].fullName}</div>
+                                            <div class="teacher-card-desig">${teachers[0].designation || 'Instructor'}</div>
+                                        </div>
+                                        <i class="fas fa-check-circle selected-check" style="display:block;"></i>
+                                    </div>`;
                     showRatingFields();
                 } else {
                     teachers.forEach(t => {
                         const card = document.createElement('div');
                         card.className = 'teacher-card-opt';
                         card.innerHTML = `
-                            <div class="teacher-avatar-sm">
-                                <i class="fas fa-user-tie"></i>
-                            </div>
-                            <div>
-                                <div class="teacher-card-name">${t.fullName}</div>
-                                <div class="teacher-card-desig">${t.designation || 'Teacher'}</div>
-                            </div>
-                            <i class="fas fa-check-circle selected-check"></i>`;
+                                        <div class="teacher-avatar-sm">
+                                            <i class="fas fa-user-tie"></i>
+                                        </div>
+                                        <div>
+                                            <div class="teacher-card-name">${t.fullName}</div>
+                                            <div class="teacher-card-desig">${t.designation || 'Teacher'}</div>
+                                        </div>
+                                        <i class="fas fa-check-circle selected-check"></i>`;
                         card.onclick = () => selectTeacher(t.id, t.fullName, card);
                         container.appendChild(card);
                     });
@@ -809,7 +812,7 @@
             }
 
             function showRatingFields() {
-                ['ratingField','feedbackField'].forEach(id => {
+                ['ratingField', 'feedbackField'].forEach(id => {
                     document.getElementById(id).style.display = 'block';
                 });
                 updateSteps(4);

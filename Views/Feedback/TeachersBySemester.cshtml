@@ -1,13 +1,15 @@
-﻿@model List<CollegeIssueManagement.Models.SemesterSummary>
+﻿@model List<CollegeIssueManagement.Models.Teacher>
 @{
     Layout = null;
+    var counts = ViewBag.FeedbackCounts as Dictionary<int, dynamic> ?? new Dictionary<int, dynamic>();
+    string semester = ViewBag.Semester as string ?? "";
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Teachers List — Semesters</title>
+    <title>@semester — Teachers</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
             *, *::before, *::after {
@@ -116,7 +118,6 @@
                 font-weight: 500;
                 transition: all 0.15s ease;
                 position: relative;
-                z-index: 2;
             }
 
                 .sidebar-link i {
@@ -246,7 +247,7 @@
             }
 
             .container {
-                max-width: 900px;
+                max-width: 1000px;
                 margin: 0 auto;
             }
 
@@ -255,6 +256,8 @@
                 align-items: center;
                 justify-content: space-between;
                 margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 12px;
             }
 
             .page-heading {
@@ -290,27 +293,28 @@
                 transition: all 0.15s;
             }
 
-            .btn-indigo {
-                background: linear-gradient(135deg, #e879f9, #a855f7);
-                color: white;
-                box-shadow: 0 4px 12px rgba(168,85,247,0.3);
+            .btn-outline {
+                background: white;
+                color: #475569;
+                border: 1px solid #cbd5e1;
             }
 
-                .btn-indigo:hover {
-                    background: linear-gradient(135deg, #d946ef, #9333ea);
-                    color: white;
+                .btn-outline:hover {
+                    background: #f8fafc;
+                    color: #0f172a;
                 }
 
-            .semester-list {
+            /* ── Teacher rows ── */
+            .teacher-list {
                 display: flex;
                 flex-direction: column;
                 gap: 12px;
             }
 
-            .semester-row {
+            .t-row {
                 background: white;
                 border-radius: 14px;
-                padding: 18px 22px;
+                padding: 16px 20px;
                 border: 1px solid #e8edf5;
                 box-shadow: 0 1px 4px rgba(0,0,0,0.06);
                 text-decoration: none;
@@ -322,9 +326,10 @@
                 transition: all 0.18s;
                 position: relative;
                 overflow: hidden;
+                flex-wrap: wrap;
             }
 
-                .semester-row::before {
+                .t-row::before {
                     content: '';
                     position: absolute;
                     top: 0;
@@ -336,24 +341,25 @@
                     transition: opacity 0.18s;
                 }
 
-                .semester-row:hover {
+                .t-row:hover {
                     transform: translateX(3px);
                     box-shadow: 0 8px 20px rgba(168,85,247,0.12);
                     border-color: #c4b5fd;
                     color: inherit;
                 }
 
-                    .semester-row:hover::before {
+                    .t-row:hover::before {
                         opacity: 1;
                     }
 
-            .semester-left {
+            .t-row-left {
                 display: flex;
                 align-items: center;
-                gap: 16px;
+                gap: 14px;
+                min-width: 240px;
             }
 
-            .semester-icon {
+            .t-avatar {
                 width: 48px;
                 height: 48px;
                 border-radius: 12px;
@@ -364,38 +370,60 @@
                 color: #a855f7;
                 font-size: 1.2rem;
                 flex-shrink: 0;
+                overflow: hidden;
             }
 
-            .semester-name {
-                font-size: 0.98rem;
+                .t-avatar img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+            .t-name {
+                font-size: 0.94rem;
                 font-weight: 700;
                 color: #0f172a;
             }
 
-            .semester-meta {
-                font-size: 0.78rem;
+            .t-sub {
+                font-size: 0.76rem;
                 color: #64748b;
                 margin-top: 2px;
             }
 
-            .semester-right {
+            .t-badges {
+                display: flex;
+                gap: 5px;
+                flex-wrap: wrap;
+            }
+
+            .t-badge {
+                padding: 3px 9px;
+                border-radius: 20px;
+                font-size: 0.71rem;
+                font-weight: 600;
+                display: inline-block;
+                white-space: nowrap;
+            }
+
+            .t-row-right {
                 display: flex;
                 align-items: center;
                 gap: 22px;
             }
 
-            .semester-stat {
+            .t-stat {
                 text-align: center;
-                min-width: 60px;
+                min-width: 52px;
             }
 
-            .semester-stat-val {
+            .t-stat-val {
                 font-size: 1.1rem;
                 font-weight: 700;
                 color: #0f172a;
             }
 
-            .semester-stat-lbl {
+            .t-stat-lbl {
                 font-size: 0.63rem;
                 color: #94a3b8;
                 font-weight: 600;
@@ -403,6 +431,26 @@
                 letter-spacing: 0.4px;
                 margin-top: 1px;
             }
+
+            .t-view-btn {
+                padding: 7px 16px;
+                border-radius: 7px;
+                background: #f3e8ff;
+                color: #a855f7;
+                font-size: 0.79rem;
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                text-decoration: none;
+                transition: all 0.15s;
+                white-space: nowrap;
+            }
+
+                .t-view-btn:hover {
+                    background: linear-gradient(135deg, #e879f9, #a855f7);
+                    color: white;
+                }
 
             .empty-state {
                 text-align: center;
@@ -455,16 +503,15 @@
                     }
             }
 
-            @@media (max-width: 600px) {
-                .semester-row {
+            @@media (max-width: 700px) {
+                .t-row {
                     flex-direction: column;
                     align-items: flex-start;
-                    gap: 12px;
                 }
 
-                .semester-right {
+                .t-row-right {
                     width: 100%;
-                    justify-content: flex-end;
+                    justify-content: space-between;
                 }
             }
     </style>
@@ -513,8 +560,8 @@
             <div class="app-topbar">
                 <div class="topbar-title-block">
                     <div class="page-title">
-                        <i class="fas fa-user-graduate"></i>
-                        Teachers List
+                        <i class="fas fa-graduation-cap"></i>
+                        @semester
                     </div>
                     <div class="page-sub">Texas College of Management &amp; IT</div>
                 </div>
@@ -535,38 +582,74 @@
                     <div class="page-header">
                         <div>
                             <div class="page-heading">
-                                <i class="fas fa-layer-group"></i>
-                                Semesters
+                                <i class="fas fa-chalkboard-teacher"></i>
+                                Teachers — @semester
                             </div>
-                            <div class="page-sub">Select a semester to see its assigned teachers</div>
+                            <div class="page-sub">Click a teacher to view their feedback</div>
                         </div>
-                        <a href="/Feedback/ManageTeachers" class="btn btn-indigo">
-                            <i class="fas fa-plus"></i> Add Teacher
+                        <a href="/Feedback/TeachersList" class="btn btn-outline">
+                            <i class="fas fa-arrow-left"></i> Back to Semesters
                         </a>
                     </div>
 
                     @if (Model.Any())
                     {
-                        <div class="semester-list">
-                            @foreach (var s in Model)
+                        <div class="teacher-list">
+                            @foreach (var t in Model)
                             {
-                                <a href="/Feedback/TeachersBySemester?semester=@Uri.EscapeDataString(s.Semester)" class="semester-row">
-                                    <div class="semester-left">
-                                        <div class="semester-icon">
-                                            <i class="fas fa-graduation-cap"></i>
+                                dynamic? cnt = counts.ContainsKey(t.Id) ? counts[t.Id] : null;
+                                int tCount = cnt != null ? (int)cnt.Count : 0;
+                                int tExc = cnt != null ? (int)cnt.Excellent : 0;
+                                double pct = tCount > 0 ? Math.Round((double)tExc / tCount * 100) : 0;
+
+                               <a href="/Feedback/TeacherDetail/@t.Id?semester=@Uri.EscapeDataString(semester)" class="t-row">
+                                    <div class="t-row-left">
+                                        <div class="t-avatar">
+                                            @if (!string.IsNullOrEmpty(t.PhotoPath))
+                                            {
+                                                <img src="@t.PhotoPath" alt="@t.FullName" />
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-user-tie"></i>
+                                            }
                                         </div>
                                         <div>
-                                            <div class="semester-name">@s.Semester</div>
-                                            <div class="semester-meta">
-                                                @s.TeacherCount teacher@(s.TeacherCount != 1 ? "s" : "") assigned
-                                            </div>
+                                            <div class="t-name">@t.FullName</div>
+                                            <div class="t-sub">@t.Subject</div>
                                         </div>
                                     </div>
-                                    <div class="semester-right">
-                                        <div class="semester-stat">
-                                            <div class="semester-stat-val">@s.FeedbackCount</div>
-                                            <div class="semester-stat-lbl">Feedbacks</div>
+
+                                    <div class="t-badges">
+                                        @if (!string.IsNullOrEmpty(t.Section))
+                                        {
+                                            <span class="t-badge" style="background:#eff6ff;color:#2563eb;">
+                                                @t.Section
+                                            </span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(t.Designation))
+                                        {
+                                            <span class="t-badge" style="background:#f8fafc;color:#475569;border:1px solid #e2e8f0;">
+                                                @t.Designation
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <div class="t-row-right">
+                                        <div class="t-stat">
+                                            <div class="t-stat-val">@tCount</div>
+                                            <div class="t-stat-lbl">Feedbacks</div>
                                         </div>
+                                        @if (tCount > 0)
+                                        {
+                                            <div class="t-stat">
+                                                <div class="t-stat-val" style="color:#16a34a;">@pct%</div>
+                                                <div class="t-stat-lbl">Excellent</div>
+                                            </div>
+                                        }
+                                        <span class="t-view-btn">
+                                            <i class="fas fa-eye"></i> View
+                                        </span>
                                     </div>
                                 </a>
                             }
@@ -575,19 +658,16 @@
                     else
                     {
                         <div class="empty-state">
-                            <i class="fas fa-layer-group"></i>
+                            <i class="fas fa-chalkboard-teacher"></i>
                             <p style="font-size:1rem;font-weight:600;color:#475569;margin-bottom:6px;">
-                                No semesters found
-                            </p>
-                            <p style="font-size:0.84rem;">
-                                Add teachers and assign them to a semester to get started
+                                No teachers assigned to this semester
                             </p>
                             <a href="/Feedback/ManageTeachers"
                                style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;
                                 padding:9px 20px;background:linear-gradient(135deg,#e879f9,#a855f7);
                                 color:white;border-radius:8px;font-size:0.84rem;
                                 font-weight:600;text-decoration:none;">
-                                <i class="fas fa-plus"></i> Add First Teacher
+                                <i class="fas fa-plus"></i> Add a Teacher
                             </a>
                         </div>
                     }

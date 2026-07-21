@@ -1,6 +1,7 @@
 ﻿@model List<CollegeIssueManagement.Models.Teacher>
 @{
     Layout = null;
+    var feedbackCounts = ViewBag.FeedbackCounts as Dictionary<int, int> ?? new Dictionary<int, int>();
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -709,7 +710,7 @@
             }
 
                 .table-responsive table {
-                    min-width: 850px;
+                    min-width: 950px;
                 }
 
             /* Footer */
@@ -888,6 +889,7 @@
                                             <th>Semester</th>
                                             <th>Section</th>
                                             <th>Designation</th>
+                                            <th>Feedbacks</th>
                                             <th>Added</th>
                                             <th>Actions</th>
                                         </tr>
@@ -895,6 +897,8 @@
                                     <tbody>
                                         @foreach (var t in Model)
                                         {
+                                            int tFeedbackCount = feedbackCounts.ContainsKey(t.Id) ? feedbackCounts[t.Id] : 0;
+
                                             <tr class="teacher-row" data-id="@t.Id">
                                                 <td>
                                                     <input type="checkbox" class="teacher-select-checkbox" value="@t.Id" onchange="updateBulkDeleteState()" />
@@ -923,10 +927,15 @@
                                                 </td>
                                                 <td>
                                                     <span class="t-badge" style="background:#eff6ff;color:#2563eb;">
-                                                        @(string.IsNullOrEmpty(t.ProfessionalClass) ? "—" : t.ProfessionalClass)
+                                                        @(string.IsNullOrEmpty(t.Section) ? "—" : t.Section)
                                                     </span>
                                                 </td>
                                                 <td style="color:#64748b;">@(t.Designation ?? "—")</td>
+                                                <td>
+                                                    <span class="t-badge" style="background:#fdf4ff;color:#a855f7;border:1px solid #f3e8ff;">
+                                                        @tFeedbackCount feedback@(tFeedbackCount != 1 ? "s" : "")
+                                                    </span>
+                                                </td>
                                                 <td style="color:#94a3b8;font-size:0.8rem;">
                                                     @t.CreatedAt.ToString("dd MMM yyyy")
                                                 </td>
@@ -939,7 +948,7 @@
                                                                 data-fullname="@t.FullName"
                                                                 data-subject="@t.Subject"
                                                                 data-semester="@t.Semester"
-                                                                data-section="@t.ProfessionalClass"
+                                                                data-section="@t.Section"
                                                                 data-designation="@t.Designation"
                                                                 data-photo="@t.PhotoPath">
                                                             <i class="fas fa-pen"></i> Edit

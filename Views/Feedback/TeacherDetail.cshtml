@@ -2,15 +2,26 @@
 @{
     Layout = null;
 
-    // Fallbacks for aggregated counts sent from Controller
     int totalCount = ViewBag.TotalCount ?? 0;
     int excellentCount = ViewBag.ExcellentCount ?? 0;
     int goodCount = ViewBag.GoodCount ?? 0;
     int averageCount = ViewBag.AverageCount ?? 0;
     int belowAvgCount = ViewBag.BelowAvgCount ?? 0;
     string? teacherPhoto = ViewBag.TeacherPhoto as string;
+    int teacherId = ViewBag.TeacherId ?? 0;
 
-    // Calculate percentage breakdown for the visual graphs
+    string? filterSemester = ViewBag.FilterSemester as string;
+    bool isScopedToSemester = !string.IsNullOrWhiteSpace(filterSemester);
+
+    string? filterSection = ViewBag.FilterSection as string;
+    bool isScopedToSection = !string.IsNullOrWhiteSpace(filterSection);
+
+    var assignedSections = ViewBag.AssignedSections as List<string> ?? new List<string>();
+
+    string backUrl = isScopedToSemester
+        ? $"/Feedback/TeachersBySemester?semester={Uri.EscapeDataString(filterSemester!)}"
+        : "/Feedback/TeachersList";
+
     double excPct = totalCount > 0 ? Math.Round((double)excellentCount / totalCount * 100) : 0;
     double goodPct = totalCount > 0 ? Math.Round((double)goodCount / totalCount * 100) : 0;
     double avgPct = totalCount > 0 ? Math.Round((double)averageCount / totalCount * 100) : 0;
@@ -42,8 +53,8 @@
             }
 
             /* ══════════════════════════════
-                                     SIDEBAR — matches ManageTeachers
-                                  ══════════════════════════════ */
+                                                             SIDEBAR — matches ManageTeachers
+                                                          ══════════════════════════════ */
             .app-sidebar {
                 width: 220px;
                 background-color: #0a1628;
@@ -271,11 +282,74 @@
                 margin-top: 4px;
                 display: flex;
                 gap: 12px;
+                flex-wrap: wrap;
+                align-items: center;
             }
 
                 .profile-meta span i {
                     margin-right: 4px;
                     color: #6366f1;
+                }
+
+            .scope-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 3px 11px;
+                border-radius: 20px;
+                font-size: 0.72rem;
+                font-weight: 700;
+                background: #f3e8ff;
+                color: #a855f7;
+            }
+
+                .scope-badge.section-badge {
+                    background: #eff6ff;
+                    color: #2563eb;
+                }
+
+            /* ── Section filter dropdown ── */
+            .section-filter-wrap {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+                .section-filter-wrap label {
+                    font-size: 0.78rem;
+                    font-weight: 700;
+                    color: #475569;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+
+                    .section-filter-wrap label i {
+                        color: #2563eb;
+                    }
+
+            .section-filter-select {
+                padding: 7px 30px 7px 12px;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                font-family: inherit;
+                font-size: 0.82rem;
+                font-weight: 600;
+                background: #f8fafc;
+                color: #0f172a;
+                outline: none;
+                cursor: pointer;
+                transition: border-color 0.15s;
+                appearance: none;
+                -webkit-appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 12px center;
+            }
+
+                .section-filter-select:focus,
+                .section-filter-select:hover {
+                    border-color: #2563eb;
                 }
 
             /* ── Analytics Layout ── */
@@ -499,6 +573,11 @@
                 .analytics-row {
                     grid-template-columns: 1fr;
                 }
+
+                .profile-banner {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
             }
     </style>
 </head>
@@ -549,7 +628,7 @@
                     <i class="fas fa-eye"></i>
                     Feedback Profile Detailed Breakdown
                 </div>
-                <a href="/Feedback/TeachersList" class="btn-back">
+                <a href="@backUrl" class="btn-back">
                     <i class="fas fa-arrow-left"></i> Back to List
                 </a>
             </div>
@@ -577,8 +656,32 @@
                                 <div class="profile-meta">
                                     <span><i class="fas fa-book"></i> @ViewBag.Subject</span>
                                     <span><i class="fas fa-graduation-cap"></i> Semester @ViewBag.Semester</span>
+                                    @if (isScopedToSemester)
+                                    {
+                                        <span class="scope-badge">
+                                            <i class="fas fa-filter"></i> Showing @filterSemester only
+                                        </span>
+                                    }
+                                    @if (isScopedToSection)
+                                    {
+                                        <span class="scope-badge section-badge">
+                                            <i class="fas fa-users"></i> Section @filterSection only
+                                        </span>
+                                    }
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- ── On-page Section filter ── -->
+                        <div class="section-filter-wrap">
+                            <label for="sectionFilterSelect"><i class="fas fa-filter"></i> Section</label>
+                            <select id="sectionFilterSelect" class="section-filter-select" onchange="onSectionFilterChange(this.value)">
+                                <option value="" selected="@(!isScopedToSection)">All Sections</option>
+                                @foreach (var sec in assignedSections)
+                                {
+                                    <option value="@sec" selected="@(filterSection == sec)">Section @sec</option>
+                                }
+                            </select>
                         </div>
                     </div>
 
@@ -679,5 +782,28 @@
             </div>
         </div>
     </div>
+
+    <script>
+            
+            // and silently zeroed out every filtered result. ══
+            function onSectionFilterChange(value) {
+                var url = '/Feedback/TeacherDetail/@teacherId';
+                var params = new URLSearchParams();
+
+                @if (isScopedToSemester)
+                    {
+                        // Json.Serialize emits a safely-quoted JS string literal
+                        // (e.g. "3rd Semester") with NO url-encoding applied.
+                        <text>params.set('semester', @Html.Raw(Json.Serialize(filterSemester)));</text>
+                }
+
+                            if (value) {
+                    params.set('section', value);
+                }
+
+                var qs = params.toString();
+                window.location.href = qs ? (url + '?' + qs) : url;
+            }
+    </script>
 </body>
 </html>

@@ -71,13 +71,29 @@ namespace CollegeIssueManagement.Controllers
         }
 
         // ═══════════════════════════════════════
+        // Comma-list helper (used for both Semester and Section fields)
+        // ═══════════════════════════════════════
+
+        private static List<string> SplitSemesters(string? raw) =>
+            (raw ?? "")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToList();
+
+        private static bool TeacherMatchesSemester(Teacher t, string semester)
+        {
+            var tokens = SplitSemesters(t.Semester);
+            return tokens.Contains(semester) || tokens.Contains("ALL");
+        }
+
+        // ═══════════════════════════════════════
         // STUDENT — Submit Feedback Form
         // ═══════════════════════════════════════
 
         [HttpGet]
         public async Task<IActionResult> SubmitFeedback()
         {
-            // Fetch raw semesters, split comma-separated selections, and return a clean distinct list
             var rawSemesters = await _context.Teachers
                 .Where(t => t.IsActive)
                 .Select(t => t.Semester)
@@ -99,7 +115,6 @@ namespace CollegeIssueManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSubjectsBySemester(string semester)
         {
-            // Pull active teachers matching selected semester or "ALL"
             var teachers = await _context.Teachers
                 .Where(t => t.IsActive && (t.Semester.Contains(semester) || t.Semester.Contains("ALL")))
                 .ToListAsync();
@@ -107,11 +122,11 @@ namespace CollegeIssueManagement.Controllers
             // Flatten multi-assigned sections so students see individual clean section options
             var subjects = teachers
                 .SelectMany(t => {
-                    var classes = string.IsNullOrEmpty(t.ProfessionalClass)
+                    var sections = string.IsNullOrEmpty(t.Section)
                         ? new[] { "" }
-                        : t.ProfessionalClass.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim());
+                        : t.Section.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim());
 
-                    return classes.Select(c => new { t.Subject, ProfessionalClass = c });
+                    return sections.Select(sec => new { t.Subject, Section = sec });
                 })
                 .Distinct()
                 .OrderBy(t => t.Subject)
@@ -120,20 +135,19 @@ namespace CollegeIssueManagement.Controllers
             return Json(subjects);
         }
 
-        // ── API: Get ALL teachers by semester + subject + professionalClass ──
+        // ── API: Get ALL teachers by semester + subject + section ──
         [HttpGet]
         public async Task<IActionResult> GetTeachersBySubject(
-            string semester, string subject, string? professionalClass)
+            string semester, string subject, string? section)
         {
             var query = _context.Teachers.Where(t => t.IsActive && t.Subject == subject);
             var teachersList = await query.ToListAsync();
 
-            // Filter in-memory to securely evaluate comma-separated list targets
             var filtered = teachersList
                 .Where(t =>
                     (t.Semester.Split(',').Select(s => s.Trim()).Contains(semester) || t.Semester.Contains("ALL")) &&
-                    (string.IsNullOrEmpty(professionalClass) ||
-                     (t.ProfessionalClass != null && t.ProfessionalClass.Split(',').Select(c => c.Trim()).Contains(professionalClass)))
+                    (string.IsNullOrEmpty(section) ||
+                     (t.Section != null && t.Section.Split(',').Select(c => c.Trim()).Contains(section)))
                 )
                 .Select(t => new { t.Id, t.FullName, t.Designation })
                 .OrderBy(t => t.FullName)
@@ -214,21 +228,18 @@ namespace CollegeIssueManagement.Controllers
                 .Include(f => f.Teacher)
                 .Where(f => f.Teacher != null && f.Teacher.IsActive);
 
-            // ── Stats ──
             ViewBag.TotalCount = await activeFeedbacksQuery.CountAsync();
             ViewBag.TodayCount = await activeFeedbacksQuery.CountAsync(f => f.SubmittedDate.Date == today);
             ViewBag.WeekCount = await activeFeedbacksQuery.CountAsync(f => f.SubmittedDate.Date >= weekStart);
             ViewBag.MonthCount = await activeFeedbacksQuery.CountAsync(f => f.SubmittedDate.Date >= monthStart);
             ViewBag.PendingCount = await activeFeedbacksQuery.CountAsync(f => f.IsReviewed);
 
-            // ── Rating distribution ──
             var allFeedbacks = await activeFeedbacksQuery.ToListAsync();
             ViewBag.ExcellentCount = allFeedbacks.Count(f => f.Rating == "Excellent");
             ViewBag.GoodCount = allFeedbacks.Count(f => f.Rating == "Good");
             ViewBag.AverageCount = allFeedbacks.Count(f => f.Rating == "Average");
             ViewBag.BelowAvgCount = allFeedbacks.Count(f => f.Rating == "Below Average");
 
-            // ── Teacher list for filter ──
             ViewBag.Teachers = await _context.Teachers
                 .Where(t => t.IsActive)
                 .OrderBy(t => t.FullName)
@@ -237,7 +248,6 @@ namespace CollegeIssueManagement.Controllers
             ViewBag.Semesters = await activeFeedbacksQuery
                 .Select(f => f.Semester).Distinct().ToListAsync();
 
-            // ── Per-teacher summary ──
             var teacherSummary = await _context.Teachers
                 .Where(t => t.IsActive)
                 .Select(t => new
@@ -257,7 +267,6 @@ namespace CollegeIssueManagement.Controllers
 
             ViewBag.TeacherSummary = teacherSummary;
 
-            // ── Apply filters to the table data ──
             var query = activeFeedbacksQuery.AsQueryable();
 
             if (!string.IsNullOrEmpty(teacherFilter) && int.TryParse(teacherFilter, out int tid))
@@ -288,7 +297,9 @@ namespace CollegeIssueManagement.Controllers
         }
 
         // ── Individual teacher detail ──
-        public async Task<IActionResult> TeacherDetail(int id)
+        // `semester`: when present, only that semester's feedback is shown.
+        // `section`: when present, further narrows feedback down to that one section.
+        public async Task<IActionResult> TeacherDetail(int id, string? semester, string? section)
         {
             var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Id == id);
             if (teacher == null)
@@ -296,13 +307,31 @@ namespace CollegeIssueManagement.Controllers
                 return NotFound();
             }
 
+            ViewBag.TeacherId = teacher.Id;
             ViewBag.TeacherName = teacher.FullName;
             ViewBag.Subject = teacher.Subject;
-            ViewBag.Semester = teacher.Semester;
+            ViewBag.FilterSemester = semester;
+            ViewBag.FilterSection = section;
             ViewBag.TeacherPhoto = teacher.PhotoPath;
 
-            var feedbacks = await _context.TeacherFeedbacks
-                                          .Where(f => f.TeacherId == id)
+            ViewBag.AssignedSections = SplitSemesters(teacher.Section)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+
+            var feedbackQuery = _context.TeacherFeedbacks.Where(f => f.TeacherId == id);
+
+            if (!string.IsNullOrWhiteSpace(semester))
+            {
+                feedbackQuery = feedbackQuery.Where(f => f.Semester == semester);
+            }
+
+            if (!string.IsNullOrWhiteSpace(section))
+            {
+                feedbackQuery = feedbackQuery.Where(f => f.Section == section);
+            }
+
+            var feedbacks = await feedbackQuery
                                           .OrderByDescending(f => f.SubmittedDate)
                                           .ToListAsync();
 
@@ -331,14 +360,12 @@ namespace CollegeIssueManagement.Controllers
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("FeedbackAdmin")))
                 return RedirectToAction("Login", "Admin");
 
-            // Validate Text Fields Manually to bypass standard model validation state errors
             if (string.IsNullOrWhiteSpace(FullName) || string.IsNullOrWhiteSpace(Subject))
             {
                 TempData["Error"] = "Full Name and Subject are required fields.";
                 return RedirectToAction("ManageTeachers");
             }
 
-            // Ensure selection choices are sent correctly
             if (Semesters == null || Semesters.Length == 0 || Sections == null || Sections.Length == 0)
             {
                 TempData["Error"] = "Please select at least one Semester and one Section.";
@@ -359,7 +386,6 @@ namespace CollegeIssueManagement.Controllers
                     photoPath = relPath;
                 }
 
-                // Join array lists into persistent comma-separated strings
                 string combinedSemesters = string.Join(", ", Semesters);
                 string combinedSections = string.Join(", ", Sections);
 
@@ -367,8 +393,8 @@ namespace CollegeIssueManagement.Controllers
                 {
                     FullName = FullName.Trim(),
                     Subject = Subject.Trim(),
-                    Semester = combinedSemesters, // Holds data like: "1st Semester, 2nd Semester"
-                    ProfessionalClass = combinedSections, // Holds mapped sections: "A, B"
+                    Semester = combinedSemesters,
+                    Section = combinedSections,
                     Designation = string.IsNullOrWhiteSpace(Designation) ? "Lecturer" : Designation.Trim(),
                     PhotoPath = photoPath,
                     CreatedAt = DateTime.Now,
@@ -399,14 +425,12 @@ namespace CollegeIssueManagement.Controllers
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("FeedbackAdmin")))
                 return RedirectToAction("Login", "Admin");
 
-            // Validate Text Fields Manually to bypass standard model validation state errors
             if (string.IsNullOrWhiteSpace(FullName) || string.IsNullOrWhiteSpace(Subject))
             {
                 TempData["Error"] = "Full Name and Subject are required fields.";
                 return RedirectToAction("ManageTeachers");
             }
 
-            // Ensure selection choices are sent correctly
             if (Semesters == null || Semesters.Length == 0 || Sections == null || Sections.Length == 0)
             {
                 TempData["Error"] = "Please select at least one Semester and one Section.";
@@ -422,11 +446,10 @@ namespace CollegeIssueManagement.Controllers
                     return RedirectToAction("ManageTeachers");
                 }
 
-                // Join array lists into persistent comma-separated strings
                 teacher.FullName = FullName.Trim();
                 teacher.Subject = Subject.Trim();
-                teacher.Semester = string.Join(", ", Semesters);          // Holds data like: "1st Semester, 2nd Semester"
-                teacher.ProfessionalClass = string.Join(", ", Sections);  // Holds mapped sections: "A, B"
+                teacher.Semester = string.Join(", ", Semesters);
+                teacher.Section = string.Join(", ", Sections);
                 teacher.Designation = string.IsNullOrWhiteSpace(Designation) ? "Lecturer" : Designation.Trim();
 
                 if (PhotoFile != null && PhotoFile.Length > 0)
@@ -438,7 +461,7 @@ namespace CollegeIssueManagement.Controllers
                         return RedirectToAction("ManageTeachers");
                     }
 
-                    DeleteTeacherPhoto(teacher.PhotoPath); // remove old file
+                    DeleteTeacherPhoto(teacher.PhotoPath);
                     teacher.PhotoPath = relPath;
                 }
                 else if (RemovePhoto)
@@ -470,7 +493,7 @@ namespace CollegeIssueManagement.Controllers
             var teacher = await _context.Teachers.FindAsync(id);
             if (teacher != null)
             {
-                teacher.IsActive = false; // Soft delete — photo file kept in case of restore
+                teacher.IsActive = false;
                 await _context.SaveChangesAsync();
             }
 
@@ -478,7 +501,7 @@ namespace CollegeIssueManagement.Controllers
             return RedirectToAction("ManageTeachers");
         }
 
-        // ── Bulk delete teachers (soft delete, same semantics as single DeleteTeacher) ──
+        // ── Bulk delete teachers ──
         [HttpPost]
         public async Task<IActionResult> BulkDeleteTeachers([FromBody] List<int> ids)
         {
@@ -493,7 +516,7 @@ namespace CollegeIssueManagement.Controllers
 
             foreach (var teacher in teachers)
             {
-                teacher.IsActive = false; // Soft delete
+                teacher.IsActive = false;
             }
 
             await _context.SaveChangesAsync();
@@ -514,10 +537,20 @@ namespace CollegeIssueManagement.Controllers
                 .ThenBy(t => t.FullName)
                 .ToListAsync();
 
+            var feedbackCounts = await _context.TeacherFeedbacks
+                .GroupBy(f => f.TeacherId)
+                .Select(g => new { TeacherId = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            ViewBag.FeedbackCounts = feedbackCounts.ToDictionary(f => f.TeacherId, f => f.Count);
+
             return View(teachers);
         }
 
-        // ── Dedicated Teachers List Route ──
+        // ═══════════════════════════════════════
+        // Teachers List — grouped by semester
+        // ═══════════════════════════════════════
+
         [AllowAnonymous]
         public async Task<IActionResult> TeachersList()
         {
@@ -526,11 +559,57 @@ namespace CollegeIssueManagement.Controllers
 
             var teachers = await _context.Teachers
                 .Where(t => t.IsActive)
-                .OrderBy(t => t.FullName)
                 .ToListAsync();
 
-            // Get feedback count per teacher
+            var allFeedbacks = await _context.TeacherFeedbacks.ToListAsync();
+
+            var realSemesters = teachers
+                .SelectMany(t => SplitSemesters(t.Semester))
+                .Where(s => s != "ALL")
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+
+            var summary = realSemesters
+                .Select(sem =>
+                {
+                    var teacherIdsInSem = teachers
+                        .Where(t => TeacherMatchesSemester(t, sem))
+                        .Select(t => t.Id)
+                        .ToList();
+
+                    return new SemesterSummary
+                    {
+                        Semester = sem,
+                        TeacherCount = teacherIdsInSem.Count,
+                        FeedbackCount = allFeedbacks.Count(f => f.Semester == sem && teacherIdsInSem.Contains(f.TeacherId))
+                    };
+                })
+                .ToList();
+
+            return View(summary);
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> TeachersBySemester(string semester)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("FeedbackAdmin")))
+                return RedirectToAction("Login", "Admin");
+
+            if (string.IsNullOrWhiteSpace(semester))
+                return RedirectToAction("TeachersList");
+
+            var teachers = await _context.Teachers
+                .Where(t => t.IsActive)
+                .ToListAsync();
+
+            var filtered = teachers
+                .Where(t => TeacherMatchesSemester(t, semester))
+                .OrderBy(t => t.FullName)
+                .ToList();
+
             var feedbackCounts = await _context.TeacherFeedbacks
+                .Where(f => f.Semester == semester)
                 .GroupBy(f => f.TeacherId)
                 .Select(g => new {
                     TeacherId = g.Key,
@@ -542,16 +621,13 @@ namespace CollegeIssueManagement.Controllers
             var countsDict = new Dictionary<int, dynamic>();
             foreach (var f in feedbackCounts)
             {
-                countsDict[f.TeacherId] = new
-                {
-                    Count = f.Count,
-                    Excellent = f.Excellent
-                };
+                countsDict[f.TeacherId] = new { Count = f.Count, Excellent = f.Excellent };
             }
 
             ViewBag.FeedbackCounts = countsDict;
+            ViewBag.Semester = semester;
 
-            return View(teachers);
+            return View(filtered);
         }
 
         // ── Delete single feedback ──
@@ -608,7 +684,7 @@ namespace CollegeIssueManagement.Controllers
                 .ToListAsync();
 
             var csv = new StringBuilder();
-            csv.AppendLine("ID,Teacher,Subject,Semester,Student,LCID,Rating,Feedback,Anonymous,Date,Reviewed");
+            csv.AppendLine("ID,Teacher,Subject,Semester,Section,Student,LCID,Rating,Feedback,Anonymous,Date,Reviewed");
 
             foreach (var f in feedbacks)
             {
@@ -617,6 +693,7 @@ namespace CollegeIssueManagement.Controllers
                     $"\"{f.Teacher?.FullName ?? ""}\"," +
                     $"\"{f.Subject}\"," +
                     $"\"{f.Semester}\"," +
+                    $"\"{f.Section ?? ""}\"," +
                     $"\"{(f.IsAnonymous ? "Anonymous" : f.StudentName)}\"," +
                     $"\"{f.LCID}\"," +
                     $"\"{f.Rating}\"," +

@@ -4,6 +4,7 @@ using CollegeIssueManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CollegeIssueManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260719140342_pc")]
+    partial class pc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -113,7 +116,7 @@ namespace CollegeIssueManagement.Migrations
                             Id = 1,
                             Email = "admin@texascollege.edu.np",
                             FullName = "Administrator",
-                            LastLogin = new DateTime(2026, 7, 20, 20, 20, 26, 374, DateTimeKind.Local).AddTicks(3005),
+                            LastLogin = new DateTime(2026, 7, 19, 7, 3, 41, 669, DateTimeKind.Local).AddTicks(746),
                             Password = "Admin@1991",
                             Username = "Admin"
                         });
@@ -420,7 +423,7 @@ namespace CollegeIssueManagement.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
-                    b.Property<string>("Section")
+                    b.Property<string>("ProfessionalClass")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -462,13 +465,13 @@ namespace CollegeIssueManagement.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ProfessionalClass")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Rating")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Section")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Semester")
                         .IsRequired()
