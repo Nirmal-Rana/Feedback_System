@@ -17,13 +17,14 @@ namespace CollegeIssueManagement.Data
         public DbSet<Admin> Admins { get; set; }
         public DbSet<AbsenceRecord> AbsenceRecords { get; set; }
         public DbSet<Teacher> Teachers { get; set; }
+        public DbSet<TeacherAssignment> TeacherAssignments { get; set; }
         public DbSet<TeacherFeedback> TeacherFeedbacks { get; set; }
         public DbSet<QRCodeSetting> QRCodeSettings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure Admin entity
             modelBuilder.Entity<Admin>(entity =>
             {
                 entity.HasKey(a => a.Id);
@@ -34,7 +35,6 @@ namespace CollegeIssueManagement.Data
                 entity.Property(a => a.LastLogin).IsRequired();
             });
 
-            // Seed Admin data
             modelBuilder.Entity<Admin>().HasData(
                 new Admin
                 {
@@ -47,18 +47,23 @@ namespace CollegeIssueManagement.Data
                 }
             );
 
-            // Configure Notification relationship
             modelBuilder.Entity<Notification>()
                 .HasOne(n => n.Issue)
                 .WithMany(i => i.Notifications)
                 .HasForeignKey(n => n.IssueId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Configure DocumentAttachment relationship
             modelBuilder.Entity<DocumentAttachment>()
                 .HasOne(d => d.Issue)
                 .WithMany()
                 .HasForeignKey(d => d.IssueId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // NEW — a teacher owns many assignments; deleting the teacher deletes its assignments.
+            modelBuilder.Entity<TeacherAssignment>()
+                .HasOne(a => a.Teacher)
+                .WithMany(t => t.Assignments)
+                .HasForeignKey(a => a.TeacherId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

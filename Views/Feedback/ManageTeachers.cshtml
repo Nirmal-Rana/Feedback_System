@@ -2,6 +2,7 @@
 @{
     Layout = null;
     var feedbackCounts = ViewBag.FeedbackCounts as Dictionary<int, int> ?? new Dictionary<int, int>();
+    const int visibleRowLimit = 10;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -32,9 +33,6 @@
                 min-height: 100vh;
             }
 
-            /* ══════════════════════════════
-                                               SIDEBAR
-                                            ══════════════════════════════ */
             .app-sidebar {
                 width: 220px;
                 background-color: #0a1628;
@@ -166,9 +164,6 @@
                 z-index: 2;
             }
 
-            /* ══════════════════════════════
-                                               MAIN AREA
-                                            ══════════════════════════════ */
             .app-main {
                 flex: 1;
                 display: flex;
@@ -256,11 +251,10 @@
             }
 
             .container {
-                max-width: 1100px;
+                max-width: 1150px;
                 margin: 0 auto;
             }
 
-            /* ── Alert ── */
             .alert {
                 padding: 12px 16px;
                 border-radius: 9px;
@@ -283,7 +277,6 @@
                 color: #b91c1c;
             }
 
-            /* ── Page actions bar (replaces the old always-visible add form) ── */
             .page-actions-bar {
                 display: flex;
                 align-items: center;
@@ -294,15 +287,9 @@
             }
 
                 .page-actions-bar h1 {
-                    font-size: 1rem;
+                    font-size: 1.05rem;
                     font-weight: 700;
                     color: #0f172a;
-                }
-
-                .page-actions-bar p {
-                    font-size: 0.8rem;
-                    color: #64748b;
-                    margin-top: 2px;
                 }
 
             .card-title {
@@ -318,44 +305,42 @@
                     color: #e879f9;
                 }
 
-            .form-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 16px;
-            }
-
             .form-group {
                 display: flex;
                 flex-direction: column;
                 gap: 6px;
+                margin-bottom: 18px;
             }
 
                 .form-group label {
-                    font-size: 0.8rem;
+                    font-size: 0.82rem;
                     font-weight: 600;
                     color: #475569;
                 }
 
-                .form-group input,
-                .form-group select {
+                .form-group input, .form-group select {
                     width: 100%;
-                    padding: 10px 12px;
+                    padding: 11px 13px;
                     border: 1px solid #cbd5e1;
                     border-radius: 8px;
                     font-family: inherit;
-                    font-size: 0.85rem;
+                    font-size: 0.88rem;
                     background: #f8fafc;
                     color: #0f172a;
                     outline: none;
                     transition: border-color 0.15s;
                 }
 
-                    .form-group input:focus,
-                    .form-group select:focus {
+                    .form-group input:focus, .form-group select:focus {
                         border-color: #a855f7;
                     }
 
-            /* ── Custom Pop-up Dropdowns ── */
+            .form-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+
             .custom-dropdown {
                 position: relative;
                 width: 100%;
@@ -363,11 +348,11 @@
 
             .dropdown-btn {
                 width: 100%;
-                padding: 10px 12px;
+                padding: 11px 13px;
                 border: 1px solid #cbd5e1;
                 border-radius: 8px;
                 font-family: inherit;
-                font-size: 0.85rem;
+                font-size: 0.88rem;
                 background: #f8fafc;
                 color: #0f172a;
                 outline: none;
@@ -394,7 +379,7 @@
                 border-radius: 8px;
                 box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
                 z-index: 100;
-                max-height: 220px;
+                max-height: 320px;
                 overflow-y: auto;
                 padding: 8px;
             }
@@ -404,12 +389,12 @@
                 }
 
                 .dropdown-options .checkbox-label {
-                    padding: 6px 8px;
+                    padding: 7px 9px;
                     border-radius: 6px;
                     display: flex;
                     align-items: center;
                     gap: 8px;
-                    font-size: 0.82rem;
+                    font-size: 0.84rem;
                     color: #334155;
                     cursor: pointer;
                     transition: background 0.1s;
@@ -424,26 +409,6 @@
                         width: auto;
                     }
 
-            .master-label {
-                color: #a855f7 !important;
-            }
-
-            .dropdown-divider {
-                border: 0;
-                height: 1px;
-                background: #e2e8f0;
-                margin: 6px 4px;
-            }
-
-            .form-actions {
-                grid-column: span 2;
-                display: flex;
-                justify-content: flex-end;
-                gap: 10px;
-                margin-top: 8px;
-            }
-
-            /* ── Buttons ── */
             .btn {
                 padding: 9px 18px;
                 border-radius: 8px;
@@ -497,7 +462,12 @@
                     color: #0f172a;
                 }
 
-            /* ── Add / Edit Teacher Modal ── */
+            /* ── Add / Edit Teacher modal ──
+                           NOTE: overflow is intentionally NOT set to hidden on .modal-panel.
+                           The Semester/Section dropdowns are absolutely-positioned children;
+                           overflow:hidden on an ancestor clips them, which was the bug where
+                           only the first few semesters/sections were visible. The backdrop
+                           below still scrolls (overflow-y:auto) if the panel is tall. */
             .modal-backdrop {
                 display: none;
                 position: fixed;
@@ -506,7 +476,7 @@
                 z-index: 300;
                 align-items: flex-start;
                 justify-content: center;
-                padding: 46px 20px;
+                padding: 30px 20px;
                 overflow-y: auto;
             }
 
@@ -518,9 +488,8 @@
                 background: white;
                 border-radius: 16px;
                 width: 100%;
-                max-width: 640px;
+                max-width: 880px;
                 box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
-                overflow: hidden;
                 animation: modalPop 0.18s ease;
             }
 
@@ -540,15 +509,19 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 18px 22px;
+                padding: 22px 30px;
                 border-bottom: 1px solid #e2e8f0;
             }
+
+                .modal-panel-header .card-title {
+                    font-size: 1rem;
+                }
 
             .modal-close-btn {
                 background: #f1f5f9;
                 border: none;
-                width: 30px;
-                height: 30px;
+                width: 32px;
+                height: 32px;
                 border-radius: 8px;
                 color: #64748b;
                 cursor: pointer;
@@ -564,11 +537,56 @@
                     color: #0f172a;
                 }
 
-            .modal-panel form {
-                padding: 22px;
+            /* ── Assignments cell (contained width + expandable) ── */
+            .assign-chip {
+                display: inline-block;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 3px 8px;
+                font-size: 0.74rem;
+                color: #475569;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
             }
 
-            /* ── Table Card ── */
+                .assign-chip strong {
+                    color: #a855f7;
+                }
+
+            .assign-cell-wrap {
+                max-width: 220px;
+            }
+
+            .assign-extra {
+                display: none;
+                flex-direction: column;
+                gap: 4px;
+                margin-top: 4px;
+            }
+
+                .assign-extra.expanded {
+                    display: flex;
+                }
+
+            .assign-more-btn {
+                background: none;
+                border: none;
+                padding: 2px 0;
+                margin-top: 4px;
+                font-size: 0.74rem;
+                font-weight: 600;
+                color: #a855f7;
+                cursor: pointer;
+                text-align: left;
+            }
+
+                .assign-more-btn:hover {
+                    text-decoration: underline;
+                }
+
             .table-card {
                 background: white;
                 border-radius: 14px;
@@ -681,14 +699,15 @@
                 vertical-align: middle;
             }
 
-            .t-badge {
-                padding: 3px 9px;
-                border-radius: 20px;
-                font-size: 0.72rem;
-                font-weight: 600;
-                display: inline-block;
-                margin: 2px 1px;
+            /* ── Name column: no wrap, roomy ── */
+            .teacher-name-cell {
+                min-width: 100px;
+                white-space: nowrap;
             }
+
+                .teacher-name-cell .teacher-name {
+                    white-space: nowrap;
+                }
 
             .empty-state {
                 text-align: center;
@@ -710,10 +729,15 @@
             }
 
                 .table-responsive table {
-                    min-width: 950px;
+                    min-width: 1050px;
                 }
 
-            /* Footer */
+            .show-more-wrap {
+                padding: 16px 20px;
+                text-align: center;
+                border-top: 1px solid #f1f5f9;
+            }
+
             .app-footer {
                 background: white;
                 border-top: 1px solid #e2e8f0;
@@ -725,7 +749,6 @@
                 color: #94a3b8;
             }
 
-            /* Responsive */
             @@media (max-width: 900px) {
                 .app-sidebar {
                     width: 60px;
@@ -754,70 +777,48 @@
                 .form-grid {
                     grid-template-columns: 1fr;
                 }
-
-                .form-actions {
-                    grid-column: span 1;
-                }
             }
     </style>
 </head>
 <body>
     <div class="app-shell">
 
-        <!-- ══ SIDEBAR ══ -->
         <aside class="app-sidebar">
             <div class="sidebar-brand">
                 <img src="/image/logo.png" alt="College Logo" />
             </div>
-
             <nav class="sidebar-nav">
                 <a href="/Feedback/FeedbackDashboard" class="sidebar-link">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
+                    <i class="fas fa-home"></i><span>Dashboard</span>
                 </a>
                 <a href="/Feedback/ManageTeachers" class="sidebar-link active">
-                    <i class="fas fa-users-cog"></i>
-                    <span>Manage Teachers</span>
+                    <i class="fas fa-users-cog"></i><span>Manage Teachers</span>
                 </a>
-
                 <span class="sidebar-section-label">Teachers</span>
                 <a href="/Feedback/TeachersList" class="sidebar-link">
-                    <i class="fas fa-user-graduate"></i>
-                    <span>Teachers List</span>
+                    <i class="fas fa-user-graduate"></i><span>Teachers List</span>
                 </a>
-
                 <span class="sidebar-section-label">Reports</span>
                 <a href="/Feedback/ExportFeedback" class="sidebar-link">
-                    <i class="fas fa-download"></i>
-                    <span>Export CSV</span>
+                    <i class="fas fa-download"></i><span>Export CSV</span>
                 </a>
             </nav>
-
             <div class="sidebar-footer">
                 <a href="/Feedback/FeedbackLogout" class="sidebar-link danger">
-                    <i class="fas fa-arrow-left"></i>
-                    <span>Back to Portal</span>
+                    <i class="fas fa-arrow-left"></i><span>Back to Portal</span>
                 </a>
             </div>
         </aside>
 
-        <!-- ══ MAIN ══ -->
         <div class="app-main">
-
-            <!-- Top Bar -->
             <div class="app-topbar">
                 <div class="topbar-title-block">
-                    <div class="page-title">
-                        <i class="fas fa-users-cog"></i>
-                        Manage Teachers
-                    </div>
+                    <div class="page-title"><i class="fas fa-users-cog"></i> Manage Teachers</div>
                     <div class="page-sub">Texas College of Management &amp; IT</div>
                 </div>
                 <div class="topbar-right">
                     <div class="topbar-user">
-                        <div class="user-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
+                        <div class="user-avatar"><i class="fas fa-user"></i></div>
                         <div class="user-info-text">
                             <div class="user-name">Texas College of</div>
                             <div class="user-role">Management &amp; IT</div>
@@ -826,31 +827,20 @@
                 </div>
             </div>
 
-            <!-- Content -->
             <div class="app-content">
                 <div class="container">
 
                     @if (TempData["Success"] != null)
                     {
-                        <div class="alert alert-success">
-                            <i class="fas fa-check-circle"></i>
-                            @TempData["Success"]
-                        </div>
+                        <div class="alert alert-success"><i class="fas fa-check-circle"></i> @TempData["Success"]</div>
                     }
                     @if (TempData["Error"] != null)
                     {
-                        <div class="alert alert-error">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            @TempData["Error"]
-                        </div>
+                        <div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> @TempData["Error"]</div>
                     }
 
-                    <!-- [CHANGED] Add form is now a popup modal, triggered from here -->
                     <div class="page-actions-bar">
-                        <div>
-                            <h1>Teachers</h1>
-                            <p>Add, edit, or remove instructors and their assigned subjects.</p>
-                        </div>
+                        <h1>Teachers</h1>
                         <button type="button" class="btn btn-indigo" onclick="openAddModal()">
                             <i class="fas fa-user-plus"></i> Add New Teacher
                         </button>
@@ -858,10 +848,7 @@
 
                     <div class="table-card">
                         <div class="table-top">
-                            <h2>
-                                <i class="fas fa-list"></i>
-                                All Teachers
-                            </h2>
+                            <h2><i class="fas fa-list"></i> All Teachers</h2>
                             <div class="table-controls">
                                 <button type="button" id="bulkDeleteBtn" class="btn btn-red" style="display:none;" onclick="bulkDeleteTeachers()">
                                     <i class="fas fa-trash"></i> Delete Selected (<span id="selectedCount">0</span>)
@@ -880,14 +867,10 @@
                                 <table id="teachersTable">
                                     <thead>
                                         <tr>
-                                            <th style="width:36px;">
-                                                <input type="checkbox" id="selectAllTeachers" onchange="toggleSelectAllTeachers(this)" />
-                                            </th>
+                                            <th style="width:36px;"><input type="checkbox" id="selectAllTeachers" onchange="toggleSelectAllTeachers(this)" /></th>
                                             <th>#</th>
                                             <th>Name</th>
-                                            <th>Subject</th>
-                                            <th>Semester</th>
-                                            <th>Section</th>
+                                            <th>Assignments</th>
                                             <th>Designation</th>
                                             <th>Feedbacks</th>
                                             <th>Added</th>
@@ -895,16 +878,19 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @{
+                                            int rowIndex = 0;
+                                        }
                                         @foreach (var t in Model)
                                         {
                                             int tFeedbackCount = feedbackCounts.ContainsKey(t.Id) ? feedbackCounts[t.Id] : 0;
+                                            var orderedAssignments = t.Assignments.OrderBy(a => a.Semester).ToList();
+                                            bool isExtraRow = rowIndex >= visibleRowLimit;
 
-                                            <tr class="teacher-row" data-id="@t.Id">
-                                                <td>
-                                                    <input type="checkbox" class="teacher-select-checkbox" value="@t.Id" onchange="updateBulkDeleteState()" />
-                                                </td>
+                                            <tr class="teacher-row @(isExtraRow ? "extra-teacher-row" : "")" data-id="@t.Id" style="@(isExtraRow ? "display:none;" : "")">
+                                                <td><input type="checkbox" class="teacher-select-checkbox" value="@t.Id" onchange="updateBulkDeleteState()" /></td>
                                                 <td style="color:#94a3b8;font-size:0.8rem;">@t.Id</td>
-                                                <td>
+                                                <td class="teacher-name-cell">
                                                     <div style="display:flex;align-items:center;gap:10px;">
                                                         @if (!string.IsNullOrEmpty(t.PhotoPath))
                                                         {
@@ -919,26 +905,53 @@
                                                         <div class="teacher-name" style="font-weight:600;color:#0f172a;">@t.FullName</div>
                                                     </div>
                                                 </td>
-                                                <td style="color:#475569;">@t.Subject</td>
                                                 <td>
-                                                    <span class="t-badge" style="background:#f3e8ff;color:#a855f7;">
-                                                        @t.Semester
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span class="t-badge" style="background:#eff6ff;color:#2563eb;">
-                                                        @(string.IsNullOrEmpty(t.Section) ? "—" : t.Section)
-                                                    </span>
+                                                    <div class="assign-cell-wrap">
+                                                        @if (orderedAssignments.Any())
+                                                        {
+                                                            var first = orderedAssignments[0];
+                                                            var rest = orderedAssignments.Skip(1).ToList();
+
+                                                            <span class="assign-chip">
+                                                                <strong>@first.Semester</strong> — @first.Subject
+                                                                @if (!string.IsNullOrEmpty(first.Section))
+                                                                {
+                                                                    <span>(@first.Section)</span>
+                                                                }
+                                                            </span>
+
+                                                            @if (rest.Any())
+                                                            {
+                                                                <div class="assign-extra" id="assignExtra-@t.Id">
+                                                                    @foreach (var a in rest)
+                                                                    {
+                                                                        <span class="assign-chip">
+                                                                            <strong>@a.Semester</strong> — @a.Subject
+                                                                            @if (!string.IsNullOrEmpty(a.Section))
+                                                                            {
+                                                                                <span>(@a.Section)</span>
+                                                                            }
+                                                                        </span>
+                                                                    }
+                                                                </div>
+                                                                <button type="button" class="assign-more-btn" id="assignToggleBtn-@t.Id" onclick="toggleAssignments(@t.Id, @rest.Count)">
+                                                                    +@rest.Count more
+                                                                </button>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span style="color:#94a3b8;font-size:0.78rem;">No subjects assigned</span>
+                                                        }
+                                                    </div>
                                                 </td>
                                                 <td style="color:#64748b;">@(t.Designation ?? "—")</td>
                                                 <td>
-                                                    <span class="t-badge" style="background:#fdf4ff;color:#a855f7;border:1px solid #f3e8ff;">
+                                                    <span class="assign-chip" style="color:#a855f7;">
                                                         @tFeedbackCount feedback@(tFeedbackCount != 1 ? "s" : "")
                                                     </span>
                                                 </td>
-                                                <td style="color:#94a3b8;font-size:0.8rem;">
-                                                    @t.CreatedAt.ToString("dd MMM yyyy")
-                                                </td>
+                                                <td style="color:#94a3b8;font-size:0.8rem;">@t.CreatedAt.ToString("dd MMM yyyy")</td>
                                                 <td>
                                                     <div style="display:flex;gap:8px;align-items:center;">
                                                         <button type="button"
@@ -946,11 +959,9 @@
                                                                 style="padding:5px 12px;font-size:0.78rem;"
                                                                 data-id="@t.Id"
                                                                 data-fullname="@t.FullName"
-                                                                data-subject="@t.Subject"
-                                                                data-semester="@t.Semester"
-                                                                data-section="@t.Section"
                                                                 data-designation="@t.Designation"
-                                                                data-photo="@t.PhotoPath">
+                                                                data-photo="@t.PhotoPath"
+                                                                data-assignments='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(orderedAssignments.Select(a => new { semester = a.Semester, subject = a.Subject, section = a.Section })))'>
                                                             <i class="fas fa-pen"></i> Edit
                                                         </button>
                                                         <a href="/Feedback/TeacherDetail/@t.Id" class="btn btn-outline" style="padding:5px 12px;font-size:0.78rem;">
@@ -966,37 +977,41 @@
                                                     </div>
                                                 </td>
                                             </tr>
+                                            rowIndex++;
                                         }
                                     </tbody>
                                 </table>
                             </div>
+
+                            @if (Model.Count > visibleRowLimit)
+                            {
+                                <div class="show-more-wrap">
+                                    <button type="button" id="showMoreTeachersBtn" class="btn btn-outline" onclick="showMoreTeachers()">
+                                        <i class="fas fa-chevron-down"></i> Show More Teachers (@(Model.Count - visibleRowLimit) more)
+                                    </button>
+                                </div>
+                            }
                         }
                         else
                         {
                             <div class="empty-state">
                                 <i class="fas fa-user-slash"></i>
-                                <p style="font-size:0.94rem;font-weight:600;color:#475569;">
-                                    No teachers added yet
-                                </p>
-                                <p style="font-size:0.82rem;margin-top:4px;">
-                                    Use the "Add New Teacher" button above to add your first teacher
-                                </p>
+                                <p style="font-size:0.94rem;font-weight:600;color:#475569;">No teachers added yet</p>
+                                <p style="font-size:0.82rem;margin-top:4px;">Use the "Add New Teacher" button above to add your first teacher</p>
                             </div>
                         }
                     </div>
 
                 </div>
             </div>
-            <!-- Footer -->
             <div class="app-footer">
                 <span>© 2026 Texas International College. All rights reserved.</span>
                 <span>Version 1.0.0</span>
             </div>
-
         </div>
     </div>
 
-    <!-- ══ Add / Edit Teacher Modal ══ -->
+    <!-- ══ Add / Edit Teacher Modal — wizard ══ -->
     <div class="modal-backdrop" id="teacherModalBackdrop" onclick="closeTeacherModalOnBackdrop(event)">
         <div class="modal-panel">
             <div class="modal-panel-header">
@@ -1012,104 +1027,125 @@
             <form id="teacherForm" asp-controller="Feedback" asp-action="AddTeacher" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Id" id="teacherIdField" value="0" />
-                <div class="form-grid">
-                    <div class="form-group" style="grid-column: span 2;">
-                        <label>Teacher Photo</label>
-                        <div style="display:flex;align-items:center;gap:14px;">
-                            <div style="width:64px;height:64px;border-radius:12px;overflow:hidden;border:1px solid #cbd5e1;background:#f8fafc;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                <img id="photoPreview" src="" alt="Preview" style="width:100%;height:100%;object-fit:cover;display:none;" />
-                                <i class="fas fa-user" id="photoPreviewIcon" style="color:#cbd5e1;font-size:1.6rem;"></i>
-                            </div>
-                            <div style="flex:1;">
-                                <input type="file" name="PhotoFile" id="photoFileInput" accept=".jpg,.jpeg,.png,.webp" onchange="previewPhoto(this)" />
-                                <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">JPG, PNG or WEBP. Max 3MB.</div>
-                                <div id="removePhotoWrap" style="display:none;margin-top:6px;">
-                                    <label style="font-size:0.78rem;color:#64748b;display:flex;align-items:center;gap:6px;cursor:pointer;">
-                                        <input type="checkbox" name="RemovePhoto" value="true" /> Remove current photo
-                                    </label>
+                <input type="hidden" name="AssignmentsJson" id="assignmentsJsonField" value="[]" />
+
+                <div style="padding:34px;">
+
+                    <!-- STEP: Basic info (static) -->
+                    <div id="stepBasic">
+                        <div class="form-group">
+                            <label>Teacher Photo</label>
+                            <div style="display:flex;align-items:center;gap:14px;">
+                                <div style="width:64px;height:64px;border-radius:12px;overflow:hidden;border:1px solid #cbd5e1;background:#f8fafc;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <img id="photoPreview" src="" alt="Preview" style="width:100%;height:100%;object-fit:cover;display:none;" />
+                                    <i class="fas fa-user" id="photoPreviewIcon" style="color:#cbd5e1;font-size:1.6rem;"></i>
+                                </div>
+                                <div style="flex:1;">
+                                    <input type="file" name="PhotoFile" id="photoFileInput" accept=".jpg,.jpeg,.png,.webp" onchange="previewPhoto(this)" />
+                                    <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">JPG, PNG or WEBP. Max 3MB.</div>
+                                    <div id="removePhotoWrap" style="display:none;margin-top:6px;">
+                                        <label style="font-size:0.78rem;color:#64748b;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                            <input type="checkbox" name="RemovePhoto" value="true" /> Remove current photo
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Full Name *</label>
-                        <input type="text" name="FullName" id="fullNameInput" placeholder="Full Name" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Subject *</label>
-                        <input type="text" name="Subject" id="subjectInput" placeholder="Subject" required />
-                    </div>
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" name="FullName" id="fullNameInput" placeholder="Full Name" required />
+                        </div>
 
-                    <!-- Pop-up Semester Dropdown -->
-                    <div class="form-group">
-                        <label>Semesters *</label>
-                        <div class="custom-dropdown" id="semesterDropdown">
-                            <button type="button" class="dropdown-btn" onclick="toggleDropdown('semesterDropdownOptions')">
-                                <span class="btn-text">Select Semesters</span>
-                                <i class="fas fa-chevron-down"></i>
+                        <div class="form-group">
+                            <label>Designation</label>
+                            <input type="text" name="Designation" id="designationInput" placeholder="Designation (e.g. Lecturer)" />
+                        </div>
+
+                        <div style="display:flex;justify-content:flex-end;margin-top:18px;">
+                            <button type="button" class="btn btn-indigo" onclick="goToAssignments()">
+                                Next <i class="fas fa-arrow-right"></i>
                             </button>
-                            <div class="dropdown-options" id="semesterDropdownOptions">
-                                <label class="checkbox-label master-label">
-                                    <input type="checkbox" id="allSemesters" onchange="toggleSelectAll('semesterDropdownOptions', this)">
-                                    <strong>All Semesters</strong>
-                                </label>
-                                <hr class="dropdown-divider" />
-                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="1st Semester" onchange="updateDropdownText('semesterDropdown')"> 1st Sem</label>
-                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="2nd Semester" onchange="updateDropdownText('semesterDropdown')"> 2nd Sem</label>
-                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="3rd Semester" onchange="updateDropdownText('semesterDropdown')"> 3rd Sem</label>
-                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="4th Semester" onchange="updateDropdownText('semesterDropdown')"> 4th Sem</label>
-                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="5th Semester" onchange="updateDropdownText('semesterDropdown')"> 5th Sem</label>
-                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="6th Semester" onchange="updateDropdownText('semesterDropdown')"> 6th Sem</label>
-                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="7th Semester" onchange="updateDropdownText('semesterDropdown')"> 7th Sem</label>
-                                <label class="checkbox-label"><input type="checkbox" name="Semesters" value="8th Semester" onchange="updateDropdownText('semesterDropdown')"> 8th Sem</label>
+                        </div>
+                    </div>
+
+                    <!-- STEP: Subject assignment cards (dynamic, one at a time) -->
+                    <div id="stepAssignment" style="display:none;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                            <div class="card-title" style="font-size:0.85rem;">
+                                <i class="fas fa-layer-group"></i> Subject Assignment
+                                <span id="cardIndicator" style="color:#94a3b8;font-weight:500;font-size:0.78rem;"></span>
+                            </div>
+                            <button type="button" class="btn btn-red" style="padding:5px 10px;font-size:0.75rem;" id="removeCardBtn" onclick="removeCurrentCard()">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Subject *</label>
+                            <input type="text" id="cardSubjectInput" placeholder="e.g. Java, Python, HTML" />
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Semesters *</label>
+                                <div class="custom-dropdown" id="cardSemesterDropdown" data-placeholder="Select Semesters">
+                                    <button type="button" class="dropdown-btn" onclick="toggleDropdown('cardSemesterOptions')">
+                                        <span class="btn-text">Select Semesters</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="dropdown-options" id="cardSemesterOptions">
+                                        @foreach (var s in new[] { "1st Semester", "2nd Semester", "3rd Semester", "4th Semester", "5th Semester", "6th Semester", "7th Semester", "8th Semester" })
+                                        {
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" class="card-sem-cb" value="@s" onchange="updateDropdownText('cardSemesterDropdown')"> @s
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Sections *</label>
+                                <div class="custom-dropdown" id="cardSectionDropdown" data-placeholder="Select Sections">
+                                    <button type="button" class="dropdown-btn" onclick="toggleDropdown('cardSectionOptions')">
+                                        <span class="btn-text">Select Sections</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="dropdown-options" id="cardSectionOptions">
+                                        @foreach (var letter in new[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' })
+                                        {
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" class="card-sec-cb" value="@letter" onchange="updateDropdownText('cardSectionDropdown')"> Section @letter
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:22px;flex-wrap:wrap;gap:10px;">
+                            <button type="button" class="btn btn-outline" onclick="prevCard()">
+                                <i class="fas fa-arrow-left"></i> Previous
+                            </button>
+                            <div style="display:flex;gap:10px;">
+                                <button type="button" class="btn btn-outline" id="nextCardBtn" onclick="nextCard()">
+                                    Next <i class="fas fa-arrow-right"></i>
+                                </button>
+                                <button type="button" class="btn btn-indigo" onclick="saveTeacher()">
+                                    <i class="fas fa-save"></i> <span id="saveBtnText">Save Teacher</span>
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Pop-up Section Dropdown -->
-                    <div class="form-group">
-                        <label>Sections *</label>
-                        <div class="custom-dropdown" id="sectionDropdown">
-                            <button type="button" class="dropdown-btn" onclick="toggleDropdown('sectionDropdownOptions')">
-                                <span class="btn-text">Select Sections</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                            <div class="dropdown-options" id="sectionDropdownOptions">
-                                <label class="checkbox-label master-label">
-                                    <input type="checkbox" id="allSections" onchange="toggleSelectAll('sectionDropdownOptions', this)">
-                                    <strong>All Sections</strong>
-                                </label>
-                                <hr class="dropdown-divider" />
-                                @foreach (var letter in new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' })
-                                {
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="Sections" value="@letter" onchange="updateDropdownText('sectionDropdown')"> Section @letter
-                                    </label>
-                                }
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="grid-column: span 2;">
-                        <label>Designation</label>
-                        <input type="text" name="Designation" id="designationInput" placeholder="Designation (e.g. Lecturer)" />
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-outline" onclick="closeTeacherModal()">Cancel</button>
-                        <button type="submit" class="btn btn-indigo">
-                            <i class="fas fa-plus" id="submitBtnIcon"></i>
-                            <span id="submitBtnText">Add Teacher</span>
-                        </button>
-                    </div>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-            // ══ Dropdown / multi-select handling ══
+            // ══ Generic dropdown handling ══
             function toggleDropdown(id) {
                 document.querySelectorAll('.dropdown-options').forEach(el => {
                     if (el.id !== id) el.classList.remove('show');
@@ -1118,41 +1154,20 @@
             }
             window.onclick = function(event) {
                 if (!event.target.closest('.custom-dropdown')) {
-                    document.querySelectorAll('.dropdown-options').forEach(el => {
-                        el.classList.remove('show');
-                    });
+                    document.querySelectorAll('.dropdown-options').forEach(el => el.classList.remove('show'));
                 }
             }
-
-            function toggleSelectAll(containerId, masterCheckbox) {
-                const container = document.getElementById(containerId);
-                const checkboxes = container.querySelectorAll('input[type="checkbox"]:not(.master-label input)');
-
-                checkboxes.forEach(cb => {
-                    cb.checked = masterCheckbox.checked;
-                });
-
-                updateDropdownText(container.parentElement.id);
-            }
-
-            // Dynamically updates UI header summary within select controls
             function updateDropdownText(dropdownId) {
                 const dropdown = document.getElementById(dropdownId);
-                const checkboxes = dropdown.querySelectorAll('.dropdown-options input[type="checkbox"]:not(.master-label input)');
-                const masterCheckbox = dropdown.querySelector('.master-label input');
+                const checkboxes = dropdown.querySelectorAll('.dropdown-options input[type="checkbox"]');
                 const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
                 const buttonText = dropdown.querySelector('.btn-text');
-
-                if (masterCheckbox) {
-                    masterCheckbox.checked = (checkedBoxes.length === checkboxes.length);
-                }
+                const placeholder = dropdown.dataset.placeholder || 'Select';
 
                 if (checkedBoxes.length === 0) {
-                    buttonText.innerText = dropdownId === 'semesterDropdown' ? 'Select Semesters' : 'Select Sections';
-                } else if (checkedBoxes.length === checkboxes.length) {
-                    buttonText.innerText = dropdownId === 'semesterDropdown' ? 'All Semesters Selected' : 'All Sections Selected';
+                    buttonText.innerText = placeholder;
                 } else if (checkedBoxes.length <= 2) {
-                    buttonText.innerText = checkedBoxes.map(cb => cb.parentElement.innerText.trim()).join(', ');
+                    buttonText.innerText = checkedBoxes.map(cb => cb.parentElement.textContent.trim()).join(', ');
                 } else {
                     buttonText.innerText = checkedBoxes.length + " Items Selected";
                 }
@@ -1168,7 +1183,6 @@
                     icon.style.display = 'none';
                 }
             }
-
             function resetPhotoPreview() {
                 const preview = document.getElementById('photoPreview');
                 const icon = document.getElementById('photoPreviewIcon');
@@ -1177,47 +1191,147 @@
                 icon.style.display = 'inline-block';
             }
 
-            // ══ Add / Edit Teacher modal ══
+            // ══ Modal open/close ══
             function openTeacherModal() {
                 document.getElementById('teacherModalBackdrop').classList.add('show');
                 document.body.style.overflow = 'hidden';
             }
-
             function closeTeacherModal() {
                 document.getElementById('teacherModalBackdrop').classList.remove('show');
                 document.body.style.overflow = '';
             }
-
             function closeTeacherModalOnBackdrop(evt) {
                 if (evt.target.id === 'teacherModalBackdrop') closeTeacherModal();
             }
-
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') closeTeacherModal();
             });
 
-            function resetTeacherFormSelections() {
-                document.querySelectorAll('#semesterDropdownOptions input[type="checkbox"], #sectionDropdownOptions input[type="checkbox"]')
-                    .forEach(cb => cb.checked = false);
-                updateDropdownText('semesterDropdown');
-                updateDropdownText('sectionDropdown');
+            // ══ Assignments cell — expand/collapse "+N more" ══
+            function toggleAssignments(teacherId, extraCount) {
+                const extra = document.getElementById('assignExtra-' + teacherId);
+                const btn = document.getElementById('assignToggleBtn-' + teacherId);
+                if (!extra || !btn) return;
+
+                const expanded = extra.classList.toggle('expanded');
+                btn.textContent = expanded ? 'Show less' : ('+' + extraCount + ' more');
             }
 
+            // ══ Show more teachers (pagination) ══
+            function showMoreTeachers() {
+                document.querySelectorAll('.extra-teacher-row').forEach(row => {
+                    row.style.display = '';
+                });
+                const btn = document.getElementById('showMoreTeachersBtn');
+                if (btn) btn.style.display = 'none';
+            }
+
+            // ══ Wizard state ══
+            let wizardAssignments = [];
+            let wizardIndex = 0;
+
+            function emptyAssignment() { return { semesters: [], subject: '', sections: [] }; }
+
+            function goToAssignments() {
+                const name = document.getElementById('fullNameInput').value.trim();
+                if (!name) { alert("Please enter the teacher's full name."); return; }
+                if (wizardAssignments.length === 0) wizardAssignments.push(emptyAssignment());
+                wizardIndex = 0;
+                document.getElementById('stepBasic').style.display = 'none';
+                document.getElementById('stepAssignment').style.display = 'block';
+                renderCard();
+            }
+
+            function backToBasic() {
+                syncCardFromDom();
+                document.getElementById('stepAssignment').style.display = 'none';
+                document.getElementById('stepBasic').style.display = 'block';
+            }
+
+            function renderCard() {
+                const a = wizardAssignments[wizardIndex];
+                document.getElementById('cardSubjectInput').value = a.subject || '';
+                document.querySelectorAll('.card-sem-cb').forEach(cb => cb.checked = a.semesters.includes(cb.value));
+                document.querySelectorAll('.card-sec-cb').forEach(cb => cb.checked = a.sections.includes(cb.value));
+                updateDropdownText('cardSemesterDropdown');
+                updateDropdownText('cardSectionDropdown');
+
+                document.getElementById('cardIndicator').textContent = `(${wizardIndex + 1} of ${wizardAssignments.length})`;
+                document.getElementById('removeCardBtn').style.display = wizardAssignments.length > 1 ? 'inline-flex' : 'none';
+
+                const nextBtn = document.getElementById('nextCardBtn');
+                nextBtn.innerHTML = (wizardIndex === wizardAssignments.length - 1)
+                    ? '<i class="fas fa-plus"></i> Add Another Subject'
+                    : 'Next <i class="fas fa-arrow-right"></i>';
+            }
+
+            function syncCardFromDom() {
+                if (wizardAssignments.length === 0) return;
+                const a = wizardAssignments[wizardIndex];
+                a.subject = document.getElementById('cardSubjectInput').value.trim();
+                a.semesters = Array.from(document.querySelectorAll('.card-sem-cb:checked')).map(cb => cb.value);
+                a.sections = Array.from(document.querySelectorAll('.card-sec-cb:checked')).map(cb => cb.value);
+            }
+
+            function prevCard() {
+                syncCardFromDom();
+                if (wizardIndex > 0) {
+                    wizardIndex--;
+                    renderCard();
+                } else {
+                    backToBasic();
+                }
+            }
+
+            function nextCard() {
+                syncCardFromDom();
+                const current = wizardAssignments[wizardIndex];
+                if (!current.subject || current.semesters.length === 0 || current.sections.length === 0) {
+                    alert('Please fill in Subject, Semester(s), and Section(s) before continuing.');
+                    return;
+                }
+                if (wizardIndex === wizardAssignments.length - 1) {
+                    wizardAssignments.push(emptyAssignment());
+                }
+                wizardIndex++;
+                renderCard();
+            }
+
+            function removeCurrentCard() {
+                if (wizardAssignments.length <= 1) return;
+                wizardAssignments.splice(wizardIndex, 1);
+                if (wizardIndex >= wizardAssignments.length) wizardIndex = wizardAssignments.length - 1;
+                renderCard();
+            }
+
+            function saveTeacher() {
+                syncCardFromDom();
+                const valid = wizardAssignments.filter(a => a.subject && a.semesters.length && a.sections.length);
+                if (valid.length === 0) {
+                    alert('Please add at least one complete subject assignment (subject, semester, and section).');
+                    return;
+                }
+                document.getElementById('assignmentsJsonField').value = JSON.stringify(valid);
+                document.getElementById('teacherForm').submit();
+            }
+
+            // ══ Add / Edit entry points ══
             function openAddModal() {
                 document.getElementById('modalTitleText').textContent = 'Add New Teacher';
                 document.getElementById('modalIcon').className = 'fas fa-user-plus';
-                document.getElementById('submitBtnIcon').className = 'fas fa-plus';
-                document.getElementById('submitBtnText').textContent = 'Add Teacher';
                 document.getElementById('teacherForm').setAttribute('action', '/Feedback/AddTeacher');
                 document.getElementById('teacherIdField').value = '0';
 
                 document.getElementById('fullNameInput').value = '';
-                document.getElementById('subjectInput').value = '';
                 document.getElementById('designationInput').value = '';
                 document.getElementById('photoFileInput').value = '';
                 document.getElementById('removePhotoWrap').style.display = 'none';
                 resetPhotoPreview();
-                resetTeacherFormSelections();
+
+                wizardAssignments = [emptyAssignment()];
+                wizardIndex = 0;
+                document.getElementById('stepAssignment').style.display = 'none';
+                document.getElementById('stepBasic').style.display = 'block';
 
                 openTeacherModal();
             }
@@ -1225,16 +1339,13 @@
             function openEditModal(data) {
                 document.getElementById('modalTitleText').textContent = 'Edit Teacher';
                 document.getElementById('modalIcon').className = 'fas fa-user-edit';
-                document.getElementById('submitBtnIcon').className = 'fas fa-save';
-                document.getElementById('submitBtnText').textContent = 'Save Changes';
                 document.getElementById('teacherForm').setAttribute('action', '/Feedback/EditTeacher');
                 document.getElementById('teacherIdField').value = data.id;
 
                 document.getElementById('fullNameInput').value = data.fullName || '';
-                document.getElementById('subjectInput').value = data.subject || '';
                 document.getElementById('designationInput').value = data.designation || '';
-
                 document.getElementById('photoFileInput').value = '';
+
                 if (data.photoPath) {
                     const preview = document.getElementById('photoPreview');
                     const icon = document.getElementById('photoPreviewIcon');
@@ -1247,17 +1358,19 @@
                     document.getElementById('removePhotoWrap').style.display = 'none';
                 }
 
-                const semesterValues = (data.semester || '').split(',').map(s => s.trim()).filter(Boolean);
-                document.querySelectorAll('#semesterDropdownOptions input[name="Semesters"]').forEach(cb => {
-                    cb.checked = semesterValues.includes(cb.value);
-                });
-                updateDropdownText('semesterDropdown');
+                let raw = [];
+                try { raw = JSON.parse(data.assignments || '[]'); } catch (e) { raw = []; }
 
-                const sectionValues = (data.section || '').split(',').map(s => s.trim()).filter(Boolean);
-                document.querySelectorAll('#sectionDropdownOptions input[name="Sections"]').forEach(cb => {
-                    cb.checked = sectionValues.includes(cb.value);
-                });
-                updateDropdownText('sectionDropdown');
+                wizardAssignments = raw.map(a => ({
+                    semesters: a.semester ? [a.semester] : [],
+                    subject: a.subject || '',
+                    sections: (a.section || '').split(',').map(s => s.trim()).filter(Boolean)
+                }));
+                if (wizardAssignments.length === 0) wizardAssignments = [emptyAssignment()];
+                wizardIndex = 0;
+
+                document.getElementById('stepAssignment').style.display = 'none';
+                document.getElementById('stepBasic').style.display = 'block';
 
                 openTeacherModal();
             }
@@ -1267,22 +1380,19 @@
                     openEditModal({
                         id: this.dataset.id,
                         fullName: this.dataset.fullname,
-                        subject: this.dataset.subject,
-                        semester: this.dataset.semester,
-                        section: this.dataset.section,
                         designation: this.dataset.designation,
-                        photoPath: this.dataset.photo
+                        photoPath: this.dataset.photo,
+                        assignments: this.dataset.assignments
                     });
                 });
             });
 
-          
             @if (TempData["Error"] != null)
                 {
                     <text>
                             document.addEventListener('DOMContentLoaded', function () {
                                 openAddModal();
-                                                        });
+                                                                                });
                     </text>
             }
 
@@ -1346,7 +1456,6 @@
                 }
             }
 
-            // Client-side quick filter logic
             function filterTeachers() {
                 var input = document.getElementById("teacherSearch");
                 var filter = input.value.toLowerCase();
@@ -1355,6 +1464,7 @@
 
                 var rows = table.getElementsByClassName("teacher-row");
                 var visibleCount = 0;
+                var searching = filter.length > 0;
 
                 for (var i = 0; i < rows.length; i++) {
                     var nameContainer = rows[i].getElementsByClassName("teacher-name")[0];
@@ -1369,6 +1479,13 @@
                             if (cb) cb.checked = false;
                         }
                     }
+                }
+
+                // While actively searching, hide the "Show More" pagination button —
+                // search should surface matches across the full list, not just the first page.
+                var showMoreBtn = document.getElementById('showMoreTeachersBtn');
+                if (showMoreBtn) {
+                    showMoreBtn.style.display = searching ? 'none' : 'inline-flex';
                 }
 
                 var counter = document.getElementById("teacherCount");
