@@ -308,7 +308,7 @@ namespace CollegeIssueManagement.Controllers
         }
 
         // ── Individual teacher detail ──
-        public async Task<IActionResult> TeacherDetail(int id, string? semester, string? section)
+        public async Task<IActionResult> TeacherDetail(int id, string? semester, string? section, string? from)
         {
             var teacher = await _context.Teachers
                 .Include(t => t.Assignments)
@@ -322,6 +322,7 @@ namespace CollegeIssueManagement.Controllers
             ViewBag.FilterSemester = semester;
             ViewBag.FilterSection = section;
             ViewBag.TeacherPhoto = teacher.PhotoPath;
+            ViewBag.From = from;
 
             var relevantAssignments = string.IsNullOrWhiteSpace(semester)
                 ? teacher.Assignments.ToList()

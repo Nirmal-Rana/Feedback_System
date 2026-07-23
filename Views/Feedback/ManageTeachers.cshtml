@@ -771,11 +771,68 @@
                     .sidebar-brand img {
                         width: 36px;
                     }
+
+                .app-content {
+                    padding: 16px 12px;
+                }
+
+                .container {
+                    max-width: 100%;
+                }
             }
 
             @@media (max-width: 768px) {
                 .form-grid {
                     grid-template-columns: 1fr;
+                }
+
+                .page-actions-bar {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                    .page-actions-bar .btn-indigo {
+                        width: 100%;
+                        justify-content: center;
+                    }
+
+                .table-top {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                    .table-top .table-controls {
+                        flex-direction: column;
+                        align-items: stretch;
+                        width: 100%;
+                    }
+
+                .search-wrapper {
+                    width: 100%;
+                }
+
+                .search-input {
+                    width: 100%;
+                }
+
+                    .search-input:focus {
+                        width: 100%;
+                    }
+
+                #bulkDeleteBtn {
+                    width: 100%;
+                    justify-content: center;
+                }
+
+                .modal-panel {
+                    max-width: 100%;
+                    margin: 0 8px;
+                }
+            }
+
+            @@media (max-width: 500px) {
+                .table-top span {
+                    text-align: center;
                 }
             }
     </style>

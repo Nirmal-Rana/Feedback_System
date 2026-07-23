@@ -18,14 +18,26 @@
 
     var assignedSections = ViewBag.AssignedSections as List<string> ?? new List<string>();
 
-    string backUrl = isScopedToSemester
-        ? $"/Feedback/TeachersBySemester?semester={Uri.EscapeDataString(filterSemester!)}"
-        : "/Feedback/TeachersList";
+    string? cameFrom = ViewBag.From as string;
+
+    string backUrl = cameFrom == "dashboard"
+        ? "/Feedback/FeedbackDashboard"
+        : isScopedToSemester
+            ? $"/Feedback/TeachersBySemester?semester={Uri.EscapeDataString(filterSemester!)}"
+            : "/Feedback/TeachersList"; ;
 
     double excPct = totalCount > 0 ? Math.Round((double)excellentCount / totalCount * 100) : 0;
     double goodPct = totalCount > 0 ? Math.Round((double)goodCount / totalCount * 100) : 0;
     double avgPct = totalCount > 0 ? Math.Round((double)averageCount / totalCount * 100) : 0;
     double bAvgPct = totalCount > 0 ? Math.Round((double)belowAvgCount / totalCount * 100) : 0;
+
+    // Shortened display forms — "2nd Semester" -> "2nd Sem" — keeps the header
+    // from reflowing/pushing the Section dropdown when a filter is applied.
+    string ShortenSemesterLabel(string? raw) =>
+        (raw ?? "").Replace("Semester", "Sem", StringComparison.OrdinalIgnoreCase);
+
+    string shortSemesterList = ShortenSemesterLabel(ViewBag.Semester as string);
+    string shortFilterSemester = ShortenSemesterLabel(filterSemester);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -53,8 +65,8 @@
             }
 
             /* ══════════════════════════════
-                                                             SIDEBAR — matches ManageTeachers
-                                                          ══════════════════════════════ */
+                                                                         SIDEBAR — matches ManageTeachers
+                                                                      ══════════════════════════════ */
             .app-sidebar {
                 width: 220px;
                 background-color: #0a1628;
@@ -323,10 +335,6 @@
                     align-items: center;
                     gap: 5px;
                 }
-
-                    .section-filter-wrap label i {
-                        color: #2563eb;
-                    }
 
             .section-filter-select {
                 padding: 7px 30px 7px 12px;
@@ -655,11 +663,11 @@
                                 <h1 class="profile-name">@ViewBag.TeacherName</h1>
                                 <div class="profile-meta">
                                     <span><i class="fas fa-book"></i> @ViewBag.Subject</span>
-                                    <span><i class="fas fa-graduation-cap"></i> Semester @ViewBag.Semester</span>
+                                    <span><i class="fas fa-graduation-cap"></i> @shortSemesterList</span>
                                     @if (isScopedToSemester)
                                     {
                                         <span class="scope-badge">
-                                            <i class="fas fa-filter"></i> Showing @filterSemester only
+                                            <i class="fas fa-filter"></i> Showing @shortFilterSemester only
                                         </span>
                                     }
                                     @if (isScopedToSection)
@@ -674,7 +682,7 @@
 
                         <!-- ── On-page Section filter ── -->
                         <div class="section-filter-wrap">
-                            <label for="sectionFilterSelect"><i class="fas fa-filter"></i> Section</label>
+                            <label for="sectionFilterSelect">Section</label>
                             <select id="sectionFilterSelect" class="section-filter-select" onchange="onSectionFilterChange(this.value)">
                                 <option value="" selected="@(!isScopedToSection)">All Sections</option>
                                 @foreach (var sec in assignedSections)
@@ -784,7 +792,7 @@
     </div>
 
     <script>
-            
+
             // and silently zeroed out every filtered result. ══
             function onSectionFilterChange(value) {
                 var url = '/Feedback/TeacherDetail/@teacherId';
@@ -797,7 +805,7 @@
                         <text>params.set('semester', @Html.Raw(Json.Serialize(filterSemester)));</text>
                 }
 
-                            if (value) {
+                                        if (value) {
                     params.set('section', value);
                 }
 
